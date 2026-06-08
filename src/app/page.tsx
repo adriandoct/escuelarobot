@@ -291,6 +291,18 @@ export default function Home() {
       tag: "🧠 Inteligencia Artificial",
       title: "Inteligencia Artificial",
       desc: "Entrena modelos de Machine Learning y visión artificial aplicados al control y guiado de robots autónomos."
+    },
+    {
+      src: "/robotics-contest.png",
+      tag: "🏆 Competencias y Torneos",
+      title: "Torneos de Robótica",
+      desc: "Diseña robots seguidores de línea u obstáculos y compite en torneos intercolegiales oficiales y carreras autónomas."
+    },
+    {
+      src: "/robotics-hackathon.png",
+      tag: "⚡ Hackatones Tecnológicos",
+      title: "Hackatón Maker",
+      desc: "Colabora en equipo durante intensas jornadas de desarrollo técnico y creativo para resolver desafíos de automatización."
     }
   ];
 
