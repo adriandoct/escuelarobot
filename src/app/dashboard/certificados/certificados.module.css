@@ -1,0 +1,247 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.certificateCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.certificateCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--brand-gold);
+}
+
+.cardIconArea {
+  height: 120px;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(217, 119, 6, 0.05) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cardMeta {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cardMeta h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.cardMeta p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.viewBtn {
+  margin-top: 0.5rem;
+  background: var(--brand-gold-light);
+  color: var(--brand-gold);
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Modal Overlay for Diploma */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 1.5rem;
+}
+
+.diplomaContainer {
+  background: #FFF;
+  color: #1e293b;
+  border: 12px double #b45309;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 750px;
+  padding: 3rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.diplomaWatermark {
+  position: absolute;
+  font-size: 16rem;
+  opacity: 0.02;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  user-select: none;
+  pointer-events: none;
+  font-weight: 900;
+}
+
+.diplomaHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  border-bottom: 2px solid #b45309;
+  width: 100%;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.diplomaHeader h2 {
+  font-family: 'Cinzel', serif, Georgia, 'Times New Roman';
+  color: #7c2d12;
+  font-size: 1.75rem;
+  letter-spacing: 0.1em;
+}
+
+.diplomaHeader p {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: #9a3412;
+  font-weight: bold;
+}
+
+.diplomaBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.diplomaTitle {
+  font-size: 1.25rem;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.recipientName {
+  font-family: 'Playfair Display', serif, 'Times New Roman';
+  font-size: 2.25rem;
+  font-weight: bold;
+  color: #0f172a;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 0.5rem;
+  width: 80%;
+  text-transform: uppercase;
+}
+
+.diplomaText {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 580px;
+  color: #334155;
+}
+
+.beltAwarded {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #b45309;
+  text-transform: uppercase;
+  margin: 0.5rem 0;
+}
+
+.diplomaFooter {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-top: 3rem;
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 1.5rem;
+}
+
+.signatureLine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.signatureLine span {
+  font-family: 'Dancing Script', cursive, serif;
+  font-size: 1.2rem;
+  color: #64748b;
+}
+
+.signatureLine p {
+  border-top: 1.5px solid #475569;
+  width: 150px;
+  padding-top: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #475569;
+}
+
+.diplomaCode {
+  margin-top: 2rem;
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+/* Print CSS override */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .diplomaContainer, .diplomaContainer * {
+    visibility: visible;
+  }
+  .diplomaContainer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    padding: 1rem;
+  }
+  .closePrintBtn {
+    display: none !important;
+  }
+}

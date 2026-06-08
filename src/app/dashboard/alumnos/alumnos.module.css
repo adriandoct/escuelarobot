@@ -1,0 +1,445 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  flex: 1;
+  max-width: 400px;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  width: 100%;
+  outline: none;
+}
+
+.selectInput {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+}
+
+.tableCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 950px;
+}
+
+.table th {
+  text-align: left;
+  padding: 1rem 1.5rem;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table td {
+  padding: 1rem 1.5rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.studentCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--brand-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btnAction {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btnAction.edit {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.btnAction.edit:hover {
+  background: var(--border-color);
+}
+
+.btnAction.card {
+  background: var(--brand-red-light);
+  border: 1px solid rgba(225, 29, 72, 0.2);
+  color: var(--brand-red);
+}
+
+.btnAction.card:hover {
+  background: var(--brand-red);
+  color: white;
+  border-color: var(--brand-red);
+}
+
+/* Modal and Forms */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.formCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.formGroup.full {
+  grid-column: span 2;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.input {
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.input:focus {
+  border-color: var(--brand-red);
+}
+
+/* CSV Importer */
+.importerCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 650px;
+  box-shadow: var(--shadow-lg);
+}
+
+.dropzone {
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  background: var(--bg-tertiary);
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.dropzone:hover {
+  border-color: var(--brand-red);
+  background: var(--brand-red-light);
+}
+
+.previewTableWrapper {
+  overflow-x: auto;
+  max-height: 250px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.mappingRow {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Credencial Marcial layout */
+.licenseCard {
+  background: #000000;
+  color: #FFFFFF;
+  border: 4px solid var(--brand-red);
+  border-radius: 16px;
+  width: 320px;
+  padding: 1.5rem;
+  font-family: var(--font-main);
+  box-shadow: 0 0 15px rgba(225, 29, 72, 0.3);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.licenseCard::before {
+  content: "SHITO-RYU";
+  position: absolute;
+  top: 15px;
+  right: -30px;
+  background: var(--brand-red);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.2rem 2.5rem;
+  transform: rotate(45deg);
+  letter-spacing: 1px;
+}
+
+.licenseHeader h3 {
+  font-size: 1rem;
+  letter-spacing: 2px;
+  color: #FFF;
+  margin-bottom: 0.25rem;
+}
+
+.licenseHeader p {
+  font-size: 0.7rem;
+  color: var(--brand-accent);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.licenseBody {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.licensePhotoContainer {
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #FFF;
+  background: #111;
+  flex-shrink: 0;
+}
+
+.licensePhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.licenseMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.licenseMeta h4 {
+  font-size: 1.05rem;
+  color: #FFF;
+  margin-bottom: 0.15rem;
+}
+
+.licenseMeta p {
+  font-size: 0.75rem;
+  color: #CBD5E1;
+}
+
+.licenseFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 0.75rem;
+}
+
+.qrContainer {
+  background: white;
+  padding: 0.35rem;
+  border-radius: 6px;
+  width: 76px;
+  height: 76px;
+}
+
+.licenseSign {
+  text-align: right;
+  font-size: 0.6rem;
+  color: #94A3B8;
+}
+
+.licenseSign p {
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  padding-top: 0.25rem;
+  margin-top: 2rem;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printArea, .printArea * {
+    visibility: visible;
+  }
+  .printArea {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+
+.btnAction.delete {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.btnAction.delete:hover {
+  background: var(--brand-red-light);
+  color: var(--brand-red);
+  border-color: rgba(225, 29, 72, 0.2);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+
+.statusBadge.activo {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+}
+
+.statusBadge.inactivo {
+  background-color: rgba(100, 116, 139, 0.1);
+  color: #64748B;
+}
+
+.formCheckboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.checkboxInput {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--brand-red);
+}
+
