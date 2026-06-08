@@ -32,13 +32,13 @@ Esta guía detalla paso a paso cómo configurar la base de datos en Supabase y c
 ## Parte 2: Configurar y Desplegar en Render
 
 1. **Subir los Cambios a GitHub**:
-   - Asegúrate de que el código esté en tu repositorio: `https://github.com/adriandoct/dojonew.git`.
+   - Asegúrate de que el código esté en tu repositorio: `https://github.com/adriandoct/escuelarobot.git`.
    *(Nota: Todos los cambios implementados ya se encuentran confirmados y subidos a la rama `main`)*.
 
 2. **Crear un Servicio Web en Render**:
    - Inicia sesión en [Render](https://render.com/).
    - Haz clic en **New** > **Web Service**.
-   - Conecta tu cuenta de GitHub y selecciona el repositorio `dojonew`.
+   - Conecta tu cuenta de GitHub y selecciona el repositorio `escuelarobot`.
 
 3. **Configurar los Detalles del Despliegue**:
    - **Name**: `dojoia-access` (o el nombre que prefieras).
