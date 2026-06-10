@@ -99,7 +99,7 @@ export default function DashboardPage() {
   const [studentMatricula, setStudentMatricula] = useState("KA-2026-004");
   const [studentBelt, setStudentBelt] = useState("azul");
   const [studentGrado, setStudentGrado] = useState("Python Code");
-  const [studentPlan, setStudentPlan] = useState("Alumno Premium");
+  const [studentPlan, setStudentPlan] = useState("Mensualidad Regular");
   const [paymentStatus, setPaymentStatus] = useState("pagado");
 
   const supabase = createClient();
@@ -344,10 +344,11 @@ export default function DashboardPage() {
   // RENDER STUDENT PORTAL
   if (role === "karateka") {
     const planPrices: Record<string, string> = {
-      "Alumno Básico": "$99",
-      "Alumno Premium": "$299"
+      "Mensualidad Regular": "$500",
+      "Trimestre Raion Kai": "$1,400",
+      "Semestre Shito-Ryu": "$2,700"
     };
-    const planPrice = planPrices[studentPlan] || "$299";
+    const planPrice = planPrices[studentPlan] || "$500";
 
     const getRoboticsLevelName = (belt: string) => {
       switch (belt?.toLowerCase()) {

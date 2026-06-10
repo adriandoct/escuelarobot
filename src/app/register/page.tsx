@@ -13,17 +13,19 @@ export default async function RegisterPage({
   // Map plan ID to readable name
   const getPlanName = (pId: string | undefined) => {
     switch (pId) {
-      case "0": return "Alumno Básico ($99 MXN)";
-      case "1": return "Alumno Premium ($299 MXN)";
-      default: return "Alumno Básico ($99 MXN)";
+      case "0": return "Mensualidad Regular ($500 MXN)";
+      case "1": return "Trimestre Raion Kai ($1,400 MXN)";
+      case "2": return "Semestre Shito-Ryu ($2,700 MXN)";
+      default: return "Mensualidad Regular ($500 MXN)";
     }
   };
 
   const getPlanShortName = (pId: string | undefined) => {
     switch (pId) {
-      case "0": return "Alumno Básico";
-      case "1": return "Alumno Premium";
-      default: return "Alumno Básico";
+      case "0": return "Mensualidad Regular";
+      case "1": return "Trimestre Raion Kai";
+      case "2": return "Semestre Shito-Ryu";
+      default: return "Mensualidad Regular";
     }
   };
 

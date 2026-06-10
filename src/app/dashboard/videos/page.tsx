@@ -121,7 +121,7 @@ const DEFAULT_VIDEOS: TrainingVideo[] = [
 
 export default function VideosPage() {
   const [role, setRole] = useState("karateka");
-  const [plan, setPlan] = useState("Alumno Básico");
+  const [plan, setPlan] = useState("Mensualidad Regular");
   const [videos, setVideos] = useState<TrainingVideo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -160,7 +160,7 @@ export default function VideosPage() {
   useEffect(() => {
     const userEmail = getCookie("dojoia_email");
     const userRole = getCookie("dojoia_role") || "karateka";
-    const userPlan = getCookie("dojoia_plan") || "Alumno Básico";
+    const userPlan = getCookie("dojoia_plan") || "Mensualidad Regular";
     
     if (!userEmail) {
       redirect("/login?error=Debes iniciar sesión para ver los videos exclusivos de la academia.");
@@ -504,7 +504,10 @@ export default function VideosPage() {
 
     // Filter by Plan (Alumno Básico vs Alumno Premium) if not admin/sensei
     if (!isSensei) {
-      const isPremium = plan.toLowerCase().includes("premium");
+      const isPremium = plan.toLowerCase().includes("premium") || 
+                        plan.toLowerCase().includes("regular") || 
+                        plan.toLowerCase().includes("trimestre") || 
+                        plan.toLowerCase().includes("semestre");
       if (!isPremium) {
         // Alumno Básico can only watch beginner/intermediate videos
         const nivel = (v.nivel || "").toLowerCase();

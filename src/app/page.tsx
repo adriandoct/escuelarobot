@@ -348,24 +348,24 @@ export default function Home() {
 
   const plans = [
     {
-      name: "Alumno Básico",
-      price: "$99 MXN",
-      desc: "Ideal para iniciar en la robótica y explorar lecciones de programación básica.",
+      name: "Mensualidad Regular",
+      price: "$500 MXN",
+      desc: "Ideal para entrenamiento constante y monitoreo automatizado.",
       features: [
-        "Talleres de Robótica básicos",
-        "Programación con Scratch",
+        "Talleres de Robótica completos",
+        "Programación y Modelado 3D",
         "Material didáctico online",
-        "Acceso a biblioteca básica de videos",
+        "Acceso ilimitado a videoteca técnica",
         "Asistencias QR y notificaciones"
       ],
-      popular: false
+      popular: true
     },
     {
-      name: "Alumno Premium",
-      price: "$299 MXN",
-      desc: "El plan completo para creadores con acceso a todos los laboratorios y certificaciones.",
+      name: "Trimestre Raion Kai",
+      price: "$1,400 MXN",
+      desc: "Ahorra pagando un trimestre completo de preparación marcial.",
       features: [
-        "Todos los beneficios de Alumno Básico",
+        "Todos los beneficios de Mensualidad Regular",
         "Talleres de Arduino, ESP32 y Raspberry Pi",
         "Curso de Python y Machine Learning",
         "Proyectos de Impresión 3D",
@@ -373,7 +373,22 @@ export default function Home() {
         "Soporte preferente y competencias oficiales",
         "Certificados oficiales digitales de especialidad"
       ],
-      popular: true
+      popular: false
+    },
+    {
+      name: "Semestre Shito-Ryu",
+      price: "$2,700 MXN",
+      desc: "Compromiso absoluto en el tatami para aspirantes a cinta negra.",
+      features: [
+        "Todos los beneficios de Trimestre Raion Kai",
+        "Clases personalizadas y asesorías directas",
+        "Proyectos de robótica avanzados / Hackatones",
+        "Exámenes de grado con costo incluido",
+        "Participación en torneos nacionales oficiales",
+        "Acceso preferencial a laboratorios físicos",
+        "Soporte técnico y mentoría individual 1 a 1"
+      ],
+      popular: false
     }
   ];
 
@@ -534,7 +549,7 @@ export default function Home() {
                       {slides[currentSlide].tag}
                     </span>
                     <span style={{ fontSize: '0.9rem', color: 'var(--success)', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.15)', padding: '3px 10px', borderRadius: '4px' }}>
-                      Desde $99 MXN / mes
+                      Desde $500 MXN / mes
                     </span>
                   </div>
                   <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>

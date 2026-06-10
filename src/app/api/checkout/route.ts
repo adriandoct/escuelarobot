@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
 const PLANS = [
-  { id: "0", title: "Alumno Básico - IA Make", price: 99 },
-  { id: "1", title: "Alumno Premium - IA Make", price: 299 },
+  { id: "0", title: "Mensualidad Regular - IA Make", price: 500 },
+  { id: "1", title: "Trimestre Raion Kai - IA Make", price: 1400 },
+  { id: "2", title: "Semestre Shito-Ryu - IA Make", price: 2700 },
 ];
 
 export async function GET(request: Request) {
