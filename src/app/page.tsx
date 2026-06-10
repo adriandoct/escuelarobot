@@ -349,7 +349,7 @@ export default function Home() {
   const plans = [
     {
       name: "Mensualidad Regular",
-      price: "$500 MXN",
+      price: "$1,000 MXN",
       desc: "Ideal para entrenamiento constante y monitoreo automatizado.",
       features: [
         "Talleres de Robótica completos",
@@ -549,7 +549,7 @@ export default function Home() {
                       {slides[currentSlide].tag}
                     </span>
                     <span style={{ fontSize: '0.9rem', color: 'var(--success)', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.15)', padding: '3px 10px', borderRadius: '4px' }}>
-                      Desde $500 MXN / mes
+                      Desde $1,000 MXN / mes
                     </span>
                   </div>
                   <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>

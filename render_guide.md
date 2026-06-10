@@ -76,4 +76,4 @@ Al ingresar a la URL pública, podrás probar ambos perfiles implementados:
 
 2. **Estudiante / Karateka**:
    - Puedes registrar una cuenta nueva en la sección de **Registrarse** seleccionando el rol de **Estudiante / Karateka**.
-   - Al iniciar sesión con tu cuenta de Estudiante, el sistema te dirigirá al **Portal del Alumno** donde podrás ver tu código QR personal, estado de mensualidad de $500 MXN y el Chatbot de WhatsApp con sugerencias de entrenamiento.
+   - Al iniciar sesión con tu cuenta de Estudiante, el sistema te dirigirá al **Portal del Alumno** donde podrás ver tu código QR personal, estado de mensualidad de $1,000 MXN y el Chatbot de WhatsApp con sugerencias de entrenamiento.

@@ -6,7 +6,7 @@ import styles from "./checkout.module.css";
 import { CreditCard, Calendar, Lock, User, Check, AlertCircle, ShieldCheck, HelpCircle } from "lucide-react";
 
 const PLANS = [
-  { id: "0", name: "Mensualidad Regular", price: 500, desc: "Ideal para entrenamiento constante y monitoreo automatizado." },
+  { id: "0", name: "Mensualidad Regular", price: 1000, desc: "Ideal para entrenamiento constante y monitoreo automatizado." },
   { id: "1", name: "Trimestre Raion Kai", price: 1400, desc: "Ahorra pagando un trimestre completo de preparación marcial." },
   { id: "2", name: "Semestre Shito-Ryu", price: 2700, desc: "Compromiso absoluto en el tatami para aspirantes a cinta negra." },
 ];

@@ -344,11 +344,11 @@ export default function DashboardPage() {
   // RENDER STUDENT PORTAL
   if (role === "karateka") {
     const planPrices: Record<string, string> = {
-      "Mensualidad Regular": "$500",
+      "Mensualidad Regular": "$1,000",
       "Trimestre Raion Kai": "$1,400",
       "Semestre Shito-Ryu": "$2,700"
     };
-    const planPrice = planPrices[studentPlan] || "$500";
+    const planPrice = planPrices[studentPlan] || "$1,000";
 
     const getRoboticsLevelName = (belt: string) => {
       switch (belt?.toLowerCase()) {

@@ -13,10 +13,10 @@ export default async function RegisterPage({
   // Map plan ID to readable name
   const getPlanName = (pId: string | undefined) => {
     switch (pId) {
-      case "0": return "Mensualidad Regular ($500 MXN)";
+      case "0": return "Mensualidad Regular ($1,000 MXN)";
       case "1": return "Trimestre Raion Kai ($1,400 MXN)";
       case "2": return "Semestre Shito-Ryu ($2,700 MXN)";
-      default: return "Mensualidad Regular ($500 MXN)";
+      default: return "Mensualidad Regular ($1,000 MXN)";
     }
   };
 
