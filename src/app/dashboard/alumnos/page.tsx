@@ -389,7 +389,9 @@ export default function AlumnosPage() {
     }
 
     const importedList: Karateka[] = csvRows.map((row, idx) => {
-      const beltRaw = columnMapping["cinturon"] !== undefined ? row[columnMapping["cinturon"]].toLowerCase() : "blanco";
+      const beltRaw = (columnMapping["cinturon"] !== undefined && row[columnMapping["cinturon"]]) 
+        ? row[columnMapping["cinturon"]].toLowerCase() 
+        : "blanco";
       const validBelts = ["blanco", "amarillo", "naranja", "verde", "azul", "marron", "negro"];
       const cinturon = validBelts.includes(beltRaw) ? beltRaw : "blanco";
 
@@ -474,10 +476,10 @@ export default function AlumnosPage() {
 
   // Filter students based on search queries, belts and active status
   const filteredKaratekas = karatekas.filter(k => {
-    const matchesSearch = k.nombre.toLowerCase().includes(search.toLowerCase()) || 
-                          k.matricula.toLowerCase().includes(search.toLowerCase()) ||
-                          k.tutor.toLowerCase().includes(search.toLowerCase());
-    const matchesBelt = beltFilter ? k.cinturon.toLowerCase() === beltFilter.toLowerCase() : true;
+    const matchesSearch = (k.nombre || '').toLowerCase().includes(search.toLowerCase()) || 
+                          (k.matricula || '').toLowerCase().includes(search.toLowerCase()) ||
+                          (k.tutor || '').toLowerCase().includes(search.toLowerCase());
+    const matchesBelt = beltFilter ? (k.cinturon || '').toLowerCase() === beltFilter.toLowerCase() : true;
     
     let matchesStatus = true;
     if (statusFilter === "activos") {

@@ -291,7 +291,7 @@ export default function DashboardPage() {
       };
 
       finalKaratekas.forEach((k: any) => {
-        const b = k.cinturon.toLowerCase();
+        const b = (k.cinturon || '').toLowerCase();
         if (b in belts) belts[b]++;
       });
 

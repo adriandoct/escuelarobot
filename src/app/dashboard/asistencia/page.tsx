@@ -561,7 +561,7 @@ export default function AsistenciaPage() {
                         <span style={{ fontWeight: 600 }}>{log.nombre}</span>
                       </td>
                       <td>
-                        <span className={`belt-badge belt-${log.cinturon.toLowerCase()}`}>
+                        <span className={`belt-badge belt-${(log.cinturon || '').toLowerCase()}`}>
                           {getRoboticsLevelName(log.cinturon)}
                         </span>
                       </td>
@@ -617,7 +617,7 @@ export default function AsistenciaPage() {
                   )}
                 </div>
                 
-                <span className={`belt-badge belt-${scannedStudent.cinturon.toLowerCase()}`} style={{ fontSize: '1rem' }}>
+                <span className={`belt-badge belt-${(scannedStudent.cinturon || '').toLowerCase()}`} style={{ fontSize: '1rem' }}>
                   {getRoboticsLevelName(scannedStudent.cinturon)}
                 </span>
 
