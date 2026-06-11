@@ -66,6 +66,11 @@ export default function AsistenciaPage() {
   const [scannedStatus, setScannedStatus] = useState<'entrada' | 'salida'>('entrada');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Edit Log States
+  const [editingLog, setEditingLog] = useState<ScanLog | null>(null);
+  const [editStatus, setEditStatus] = useState<'entrada' | 'salida'>('entrada');
+  const [editTime, setEditTime] = useState('');
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -109,6 +114,80 @@ export default function AsistenciaPage() {
     }
   };
 
+  // Fetch recent attendance logs from Supabase
+  const fetchRecentAsistencias = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("asistencias_karate")
+        .select(`
+          id, tipo, hora, fecha, whatsapp_status,
+          karatekas(nombre, cinturon, grado)
+        `)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (data && !error) {
+        const parsedLogs: ScanLog[] = data.map((a: any) => ({
+          id: a.id,
+          nombre: a.karatekas?.nombre || "Alumno",
+          cinturon: a.karatekas?.cinturon || "blanco",
+          grado: a.karatekas?.grado || "",
+          time: a.hora ? a.hora.substring(0, 5) : "",
+          status: a.tipo,
+          whatsapp: a.whatsapp_status
+        }));
+        setRecentLogs(parsedLogs);
+        localStorage.setItem("recent_dojo_scans", JSON.stringify(parsedLogs));
+      }
+    } catch (e) {
+      console.warn("Failed to fetch recent asistencias", e);
+    }
+  };
+
+  const handleEditClick = (log: ScanLog) => {
+    setEditingLog(log);
+    setEditStatus(log.status);
+    setEditTime(log.time);
+  };
+
+  const handleEditSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingLog) return;
+
+    try {
+      // Update local state
+      const updatedLogs = recentLogs.map((log) => {
+        if (log.id === editingLog.id) {
+          return {
+            ...log,
+            status: editStatus,
+            time: editTime
+          };
+        }
+        return log;
+      });
+      setRecentLogs(updatedLogs);
+      localStorage.setItem("recent_dojo_scans", JSON.stringify(updatedLogs));
+
+      // Update in Supabase if online and it's a real record (UUID length > 5)
+      const isMockId = ["1", "2", "3"].includes(editingLog.id) || editingLog.id.length < 5;
+      if (isOnline && !isMockId) {
+        await supabase
+          .from("asistencias_karate")
+          .update({
+            tipo: editStatus,
+            hora: editTime + ":00"
+          })
+          .eq("id", editingLog.id);
+      }
+
+      setEditingLog(null);
+    } catch (err) {
+      console.error("Error updating attendance log:", err);
+      alert("Error al actualizar la asistencia.");
+    }
+  };
+
   // Monitor network status
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -116,6 +195,7 @@ export default function AsistenciaPage() {
     const goOnline = () => {
       setIsOnline(true);
       syncOfflineQueue();
+      fetchRecentAsistencias();
     };
     const goOffline = () => setIsOnline(false);
 
@@ -138,6 +218,10 @@ export default function AsistenciaPage() {
         { id: "2", nombre: "Sofía Martínez Ruiz", cinturon: "amarillo", grado: "Arduino Maker", time: "17:15", status: "entrada", whatsapp: "simulated" },
         { id: "3", nombre: "Lucas Torres Mendoza", cinturon: "marron", grado: "AI & Machine Learning", time: "17:35", status: "entrada", whatsapp: "simulated" }
       ]);
+    }
+
+    if (navigator.onLine) {
+      fetchRecentAsistencias();
     }
 
     return () => {
@@ -331,16 +415,22 @@ export default function AsistenciaPage() {
       setScannedStatus(status);
       setIsModalOpen(true);
 
+      let dbId = Math.random().toString();
+
       if (isOnline) {
-        // Post directly to Supabase
-        await supabase.from("asistencias_karate").insert({
+        // Post directly to Supabase and get the inserted ID
+        const { data: insertData } = await supabase.from("asistencias_karate").insert({
           karateka_id: matchedStudent.id,
           tipo: status,
           fecha: dateStr,
           hora: now.toTimeString().split(" ")[0],
           whatsapp_sent: true,
           whatsapp_status: "simulated"
-        });
+        }).select("id");
+
+        if (insertData && insertData[0]) {
+          dbId = insertData[0].id;
+        }
 
         // Trigger WhatsApp Simulator storage queue
         saveWhatsAppLog(scanRecord);
@@ -355,7 +445,7 @@ export default function AsistenciaPage() {
 
       // Add to recent scan logs list
       const newLog: ScanLog = {
-        id: Math.random().toString(),
+        id: dbId,
         nombre: matchedStudent.nombre,
         cinturon: matchedStudent.cinturon,
         grado: matchedStudent.grado,
@@ -552,6 +642,7 @@ export default function AsistenciaPage() {
                     <th>Hora</th>
                     <th>Tipo</th>
                     <th>Notificación</th>
+                    <th>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -579,11 +670,27 @@ export default function AsistenciaPage() {
                           <span style={{ color: '#EF4444', fontSize: '0.85rem', fontWeight: 500 }}>Falla / Offline ⚠️</span>
                         )}
                       </td>
+                      <td>
+                        <button 
+                          onClick={() => handleEditClick(log)} 
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--brand-red)',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            fontSize: '0.9rem',
+                            padding: 0
+                          }}
+                        >
+                          Editar
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {recentLogs.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-tertiary)', padding: '2rem' }}>
+                      <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-tertiary)', padding: '2rem' }}>
                         No hay escaneos recientes en esta sesión.
                       </td>
                     </tr>
@@ -648,6 +755,71 @@ export default function AsistenciaPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Edit Attendance Log Modal Overlay */}
+      {editingLog && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.studentCard} style={{ borderColor: 'var(--brand-gold)', boxShadow: '0 0 25px rgba(250, 204, 21, 0.25)', maxWidth: '380px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>Editar Asistencia</h3>
+              <button onClick={() => setEditingLog(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
+            </div>
+            
+            <form onSubmit={handleEditSave} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '0.5rem', textAlign: 'left' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Alumno</label>
+                <input 
+                  type="text" 
+                  value={editingLog.nombre} 
+                  disabled 
+                  style={{ padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Tipo de Registro</label>
+                <select 
+                  value={editStatus} 
+                  onChange={(e) => setEditStatus(e.target.value as 'entrada' | 'salida')}
+                  style={{ padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)', color: 'var(--text-primary)', outline: 'none' }}
+                >
+                  <option value="entrada">Entrada</option>
+                  <option value="salida">Salida</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Hora</label>
+                <input 
+                  type="time" 
+                  value={editTime} 
+                  onChange={(e) => setEditTime(e.target.value)}
+                  required
+                  style={{ padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)', color: 'var(--text-primary)', outline: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setEditingLog(null)} 
+                  className="btn-secondary" 
+                  style={{ flex: 1, padding: '0.6rem' }}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-primary" 
+                  style={{ flex: 1, padding: '0.6rem', background: 'var(--brand-red)' }}
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
