@@ -168,11 +168,6 @@ export default function AsistenciaPage() {
         video: { facingMode: "environment", width: 640, height: 480 }
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute("playsinline", "true");
-        videoRef.current.play();
-      }
       setCameraActive(true);
       setIsScanning(true);
     } catch (err) {
@@ -194,6 +189,26 @@ export default function AsistenciaPage() {
     setCameraActive(false);
     setIsScanning(false);
   };
+
+  // Connect stream to video element when camera becomes active
+  useEffect(() => {
+    if (cameraActive && streamRef.current && videoRef.current) {
+      const video = videoRef.current;
+      video.srcObject = streamRef.current;
+      video.play().catch(err => {
+        console.error("Error playing video stream:", err);
+      });
+    }
+  }, [cameraActive]);
+
+  // Clean up camera stream on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   // QR Scanning Loop
   useEffect(() => {
@@ -452,7 +467,13 @@ export default function AsistenciaPage() {
             
             {cameraActive ? (
               <div className={styles.videoContainer}>
-                <video ref={videoRef} className={styles.video} />
+                <video 
+                  ref={videoRef} 
+                  className={styles.video} 
+                  autoPlay 
+                  playsInline 
+                  muted 
+                />
                 <div className={styles.beam}></div>
               </div>
             ) : (
