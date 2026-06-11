@@ -7,8 +7,10 @@ const PLANS = [
 ];
 
 export async function GET(request: Request) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const baseUrl = appUrl.endsWith("/") ? appUrl.slice(0, -1) : appUrl;
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "localhost:3000";
+  const proto = request.headers.get("x-forwarded-proto") || "http";
+  const cleanProto = proto.split(",")[0].trim();
+  const baseUrl = `${cleanProto}://${host}`;
 
   try {
     const { searchParams } = new URL(request.url);
