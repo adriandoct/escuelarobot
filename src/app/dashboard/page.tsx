@@ -16,7 +16,10 @@ import {
   Award,
   Video,
   ChevronRight,
-  UserCheck
+  UserCheck,
+  FileText,
+  Download,
+  AlertCircle
 } from "lucide-react";
 import { 
   AreaChart, 
@@ -101,8 +104,35 @@ export default function DashboardPage() {
   const [studentGrado, setStudentGrado] = useState("Python Code");
   const [studentPlan, setStudentPlan] = useState("Mensualidad Regular");
   const [paymentStatus, setPaymentStatus] = useState("pagado");
+  const [activeManualUrl, setActiveManualUrl] = useState<string | null>(null);
 
   const supabase = createClient();
+
+  const fetchActiveManual = async (belt: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("materiales_nivel")
+        .select("manual_participante_url")
+        .eq("nivel", belt)
+        .limit(1);
+
+      if (data && data.length > 0 && !error) {
+        setActiveManualUrl(data[0].manual_participante_url);
+        localStorage.setItem(`manual_${belt}`, data[0].manual_participante_url || "");
+      } else {
+        const cached = localStorage.getItem(`manual_${belt}`);
+        if (cached) {
+          setActiveManualUrl(cached);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch active manual, checking cache", e);
+      const cached = localStorage.getItem(`manual_${belt}`);
+      if (cached) {
+        setActiveManualUrl(cached);
+      }
+    }
+  };
 
   useEffect(() => {
     const userRole = getCookie("dojoia_role") || "karateka";
@@ -134,6 +164,7 @@ export default function DashboardPage() {
               setStudentMatricula(data[0].matricula);
               setStudentBelt(data[0].cinturon);
               setStudentGrado(data[0].grado);
+              fetchActiveManual(data[0].cinturon);
               setLoading(false);
               return;
             }
@@ -150,6 +181,7 @@ export default function DashboardPage() {
             setStudentMatricula(dataByName[0].matricula);
             setStudentBelt(dataByName[0].cinturon);
             setStudentGrado(dataByName[0].grado);
+            fetchActiveManual(dataByName[0].cinturon);
             setLoading(false);
             return;
           }
@@ -162,19 +194,23 @@ export default function DashboardPage() {
           setStudentMatricula("KA-2026-001");
           setStudentBelt("verde");
           setStudentGrado("Raspberry Pi");
+          fetchActiveManual("verde");
         } else if (name.toLowerCase().includes("sofia")) {
           setStudentMatricula("KA-2026-002");
           setStudentBelt("amarillo");
           setStudentGrado("Arduino Maker");
+          fetchActiveManual("amarillo");
         } else if (name.toLowerCase().includes("diego")) {
           setStudentMatricula("KA-2026-003");
           setStudentBelt("negro");
           setStudentGrado("Competidor Master");
+          fetchActiveManual("negro");
         } else {
           // Default fallback
           setStudentMatricula("KA-2026-004");
           setStudentBelt("azul");
           setStudentGrado("Python Code");
+          fetchActiveManual("azul");
         }
         setLoading(false);
       };
@@ -482,6 +518,81 @@ export default function DashboardPage() {
             <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
               <span>Notificaciones enviadas a tutor por WhatsApp</span>
               <span style={{ color: '#10B981', fontWeight: 'bold' }}>Chatbot Activo 💬</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Card 3: Mi Manual de Participante (Activo) */}
+        <motion.div variants={itemVariants} className={styles.panelsGrid} style={{ gridTemplateColumns: '1fr' }}>
+          <div className={styles.chartCard} style={{ 
+            borderLeft: '4px solid var(--brand-gold)', 
+            padding: '1.5rem 2rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1.5rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+              <div style={{
+                background: 'rgba(250, 204, 21, 0.1)',
+                padding: '0.75rem',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--brand-gold)',
+                flexShrink: 0
+              }}>
+                <FileText size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '1rem', color: 'var(--text-primary)' }}>Mi Manual del Participante</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem', maxWidth: '600px', lineHeight: '1.4' }}>
+                  Material oficial de apoyo para tu nivel activo: <strong style={{ color: 'var(--brand-gold)', textTransform: 'capitalize' }}>{getRoboticsLevelName(studentBelt)}</strong>. Repasa los conceptos y completa tus desafíos maker en casa.
+                </p>
+              </div>
+            </div>
+            <div>
+              {activeManualUrl ? (
+                <a 
+                  href={activeManualUrl} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="btn-secondary"
+                  style={{
+                    background: 'var(--brand-gold)',
+                    color: '#000',
+                    border: 'none',
+                    padding: '0.6rem 1.25rem',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(250, 204, 21, 0.15)',
+                    textDecoration: 'none'
+                  }}
+                >
+                  <Download size={16} /> Descargar Manual
+                </a>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.8rem',
+                  background: 'var(--bg-tertiary)',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)'
+                }}>
+                  <AlertCircle size={14} /> El manual estará disponible pronto
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
