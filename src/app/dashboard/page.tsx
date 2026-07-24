@@ -238,8 +238,7 @@ export default function DashboardPage() {
       setLoading(true);
       const { data: listKaratekas, error: kError } = await supabase
         .from("karatekas")
-        .select("id, nombre, matricula, cinturon, grado")
-        .eq("activo", true);
+        .select("id, nombre, matricula, cinturon, grado");
 
       const today = new Date().toISOString().split("T")[0];
       const { data: listAsistencias, error: aError } = await supabase

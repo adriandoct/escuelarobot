@@ -73,7 +73,7 @@ export default function AlumnosPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [beltFilter, setBeltFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("activos");
+  const [statusFilter, setStatusFilter] = useState("todos");
 
   // Modals
   const [isFormOpen, setIsFormOpen] = useState(false);
