@@ -151,25 +151,30 @@ export default function ManualesPage() {
       setUploadingFor({ level, type });
       setStatusMsg({ text: `Subiendo archivo a ${level}...`, type: '' });
 
-      const fileName = `${level}-${type}-${Date.now()}.pdf`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('materiales')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
       let finalUrl = "";
 
-      if (uploadError) {
-        console.warn("Supabase storage upload failed, using fallback Object URL:", uploadError);
+      if (!supabase.storage) {
+        console.warn("Supabase storage is not initialized (offline/mock mode). Falling back to Object URL.");
         finalUrl = URL.createObjectURL(file);
       } else {
-        const { data: { publicUrl } } = supabase.storage
+        const fileName = `${level}-${type}-${Date.now()}.pdf`;
+        
+        const { error: uploadError } = await supabase.storage
           .from('materiales')
-          .getPublicUrl(fileName);
-        finalUrl = publicUrl;
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: true
+          });
+
+        if (uploadError) {
+          console.warn("Supabase storage upload failed, using fallback Object URL:", uploadError);
+          finalUrl = URL.createObjectURL(file);
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('materiales')
+            .getPublicUrl(fileName);
+          finalUrl = publicUrl;
+        }
       }
 
       const existingRecord = materiales[level] || {};
