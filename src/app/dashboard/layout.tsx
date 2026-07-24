@@ -15,7 +15,8 @@ import {
   BarChart2,
   Trophy,
   FileText,
-  CheckSquare
+  CheckSquare,
+  BookOpen
 } from "lucide-react";
 import Link from "next/link";
 import { cookies } from "next/headers";
@@ -101,6 +102,11 @@ export default async function DashboardLayout({
                 <CheckSquare size={20} />
                 <span>Evaluar Proyectos</span>
               </Link>
+
+              <Link href="/dashboard/manuales" className={styles.navItem}>
+                <BookOpen size={20} />
+                <span>Manuales y Materiales</span>
+              </Link>
               
               <div className={styles.navSectionTitle} style={{ marginTop: '1rem' }}>Ajustes</div>
               
@@ -136,6 +142,11 @@ export default async function DashboardLayout({
               <Link href="/dashboard/certificados" className={styles.navItem}>
                 <FileText size={20} />
                 <span>Mis Certificados</span>
+              </Link>
+
+              <Link href="/dashboard/manuales" className={styles.navItem}>
+                <BookOpen size={20} />
+                <span>Manuales de Nivel</span>
               </Link>
 
               <Link href="/dashboard/ranking" className={styles.navItem}>
