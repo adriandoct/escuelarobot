@@ -286,14 +286,45 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = public
 AS $$
+DECLARE
+  v_role user_role;
+  v_fullName TEXT;
+  v_matricula VARCHAR(50);
+  v_random_num INTEGER;
 BEGIN
+  -- 1. Determinar el rol
+  v_role := COALESCE(NEW.raw_user_meta_data->>'role', 'karateka')::user_role;
+  v_fullName := COALESCE(NEW.raw_user_meta_data->>'full_name', 'Alumno Nuevo');
+
+  -- 2. Insertar en perfiles
   INSERT INTO public.profiles (id, full_name, email, role)
   VALUES (
     NEW.id, 
-    COALESCE(NEW.raw_user_meta_data->>'full_name', 'Mentor Invitado'),
+    v_fullName,
     NEW.email,
-    'sensei'::user_role
+    v_role
   );
+
+  -- 3. Si es alumno (karateka), insertar en la tabla de karatekas
+  IF v_role = 'karateka' THEN
+    -- Generar matrícula aleatoria
+    v_random_num := floor(random() * 900 + 100)::integer;
+    v_matricula := 'KA-2026-' || v_random_num;
+
+    INSERT INTO public.karatekas (matricula, nombre, cinturon, grado, tutor, telefono, foto_url, activo)
+    VALUES (
+      v_matricula,
+      v_fullName,
+      'blanco',
+      '10° Kyu',
+      v_fullName || ' [credentials:' || NEW.email || ':123456]', -- Contraseña dummy de referencia
+      '+5215500000000',
+      'https://images.unsplash.com/photo-1542435503-956c469947f6?auto=format&fit=crop&q=80&w=200',
+      true
+    )
+    ON CONFLICT (matricula) DO NOTHING;
+  END IF;
+
   RETURN NEW;
 END;
 $$;
@@ -364,3 +395,23 @@ CREATE POLICY "Permitir subida a senseis" ON storage.objects
             WHERE id = auth.uid() AND role = 'sensei'
         )
     );
+
+-- Sincronizar usuarios existentes en auth.users que sean alumnos (karateka) y no estén en karatekas
+INSERT INTO public.karatekas (matricula, nombre, cinturon, grado, tutor, telefono, foto_url, activo)
+SELECT 
+  'KA-2026-' || (100 + floor(random() * 900)::integer)::varchar,
+  COALESCE(u.raw_user_meta_data->>'full_name', 'Alumno Registrado'),
+  'blanco',
+  '10° Kyu',
+  COALESCE(u.raw_user_meta_data->>'full_name', 'Alumno Registrado') || ' [credentials:' || u.email || ':123456]',
+  '+5215500000000',
+  'https://images.unsplash.com/photo-1542435503-956c469947f6?auto=format&fit=crop&q=80&w=200',
+  true
+FROM auth.users u
+LEFT JOIN public.profiles p ON p.id = u.id
+WHERE (u.raw_user_meta_data->>'role') = 'karateka'
+  AND NOT EXISTS (
+    SELECT 1 FROM public.karatekas k 
+    WHERE k.tutor LIKE '%' || u.email || '%'
+  )
+ON CONFLICT DO NOTHING;

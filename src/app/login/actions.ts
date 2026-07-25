@@ -199,6 +199,37 @@ export async function signup(formData: FormData) {
     return redirect("/register?error=" + encodeURIComponent(error.message));
   }
 
+  // Auto-insert student profile to 'karatekas' table if role is student
+  if (role === "karateka") {
+    try {
+      const { data: existing } = await supabase
+        .from("karatekas")
+        .select("id")
+        .like("tutor", `%[credentials:${email.toLowerCase()}:%`)
+        .limit(1);
+
+      if (!existing || existing.length === 0) {
+        const randomNum = Math.floor(100 + Math.random() * 900);
+        const matricula = `KA-2026-${randomNum}`;
+        
+        const dbPayload = {
+          matricula: matricula,
+          nombre: fullName.trim(),
+          cinturon: "blanco",
+          grado: "10° Kyu",
+          tutor: `${fullName.trim()} [credentials:${email.trim().toLowerCase()}:${password.trim()}]`,
+          telefono: "+5215500000000",
+          foto_url: "https://images.unsplash.com/photo-1542435503-956c469947f6?auto=format&fit=crop&q=80&w=200",
+          activo: true
+        };
+
+        await supabase.from("karatekas").insert(dbPayload);
+      }
+    } catch (e) {
+      console.warn("Could not insert student to database during signup:", e);
+    }
+  }
+
   cookieStore.set("dojoia_role", role, { path: "/" });
   cookieStore.set("dojoia_email", email, { path: "/" });
   cookieStore.set("dojoia_name", fullName, { path: "/" });
