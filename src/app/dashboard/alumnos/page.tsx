@@ -169,12 +169,13 @@ export default function AlumnosPage() {
         localStorage.setItem("local_karatekas", JSON.stringify(parsedData));
       }
 
-      // 2. Fetch Teachers (profiles table)
+      // 2. Fetch All Profiles
       const { data: pData, error: pError } = await supabase
         .from("profiles")
         .select("*")
-        .in("role", ["sensei", "sempai"])
         .order("full_name", { ascending: true });
+
+      let finalProfilesList = pData || [];
 
       if (pError || !pData || pData.length === 0) {
         const mockProfs = [
@@ -185,15 +186,57 @@ export default function AlumnosPage() {
 
         const cachedP = localStorage.getItem("local_profesores");
         if (cachedP) {
-          setProfesores(JSON.parse(cachedP));
+          finalProfilesList = JSON.parse(cachedP);
         } else {
-          setProfesores(mockProfs);
+          finalProfilesList = mockProfs;
           localStorage.setItem("local_profesores", JSON.stringify(mockProfs));
         }
       } else {
-        setProfesores(pData);
         localStorage.setItem("local_profesores", JSON.stringify(pData));
       }
+
+      // 3. Auto-sync missing student profiles (profiles with role='karateka' not in karatekas list)
+      const cachedStudentsString = localStorage.getItem("local_karatekas");
+      let activeStudents = cachedStudentsString ? JSON.parse(cachedStudentsString) : [];
+
+      if (finalProfilesList.length > 0) {
+        let needsSync = false;
+        for (const p of finalProfilesList) {
+          if (p.role === 'karateka' && p.email !== 'admin@admin.com') {
+            const exists = activeStudents.some((k: any) => k.email?.toLowerCase() === p.email.toLowerCase());
+            if (!exists) {
+              needsSync = true;
+              const randomNum = Math.floor(100 + Math.random() * 900);
+              const matricula = `KA-2026-${randomNum}`;
+              const dbPayload = {
+                matricula,
+                nombre: p.full_name,
+                cinturon: "blanco",
+                grado: "10° Kyu",
+                tutor: `${p.full_name} [credentials:${p.email.toLowerCase()}:123456]`,
+                telefono: "+5215500000000",
+                foto_url: p.avatar_url || "https://images.unsplash.com/photo-1542435503-956c469947f6?auto=format&fit=crop&q=80&w=200",
+                activo: true
+              };
+              
+              await supabase.from("karatekas").insert(dbPayload);
+              activeStudents.push({
+                id: p.id,
+                ...dbPayload,
+                tutor: p.full_name,
+                email: p.email.toLowerCase(),
+                password: "123456"
+              });
+            }
+          }
+        }
+        if (needsSync) {
+          setKaratekas([...activeStudents]);
+          localStorage.setItem("local_karatekas", JSON.stringify(activeStudents));
+        }
+      }
+
+      setProfesores(finalProfilesList);
 
     } catch (e) {
       console.error("Error loading directory data:", e);
@@ -528,6 +571,57 @@ export default function AlumnosPage() {
     }
   };
 
+  const handleConvertToStudent = async (profId: string, fullName: string, email: string) => {
+    if (!confirm(`¿Deseas convertir a ${fullName} (${email}) en Alumno? Se creará su ficha de estudiante y se le asignará el rol de Alumno.`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // 1. Update profile role to 'karateka'
+      const { error: pError } = await supabase
+        .from("profiles")
+        .update({ role: "karateka" })
+        .eq("id", profId);
+
+      if (pError) {
+        console.error("Error updating profile role:", pError);
+        alert("Error al actualizar el rol: " + pError.message);
+        return;
+      }
+
+      // 2. Insert into karatekas table
+      const randomNum = Math.floor(100 + Math.random() * 900);
+      const matricula = `KA-2026-${randomNum}`;
+      const dbPayload = {
+        matricula,
+        nombre: fullName.trim(),
+        cinturon: "blanco",
+        grado: "10° Kyu",
+        tutor: `${fullName.trim()} [credentials:${email.toLowerCase()}:123456]`,
+        telefono: "+5215500000000",
+        foto_url: "https://images.unsplash.com/photo-1542435503-956c469947f6?auto=format&fit=crop&q=80&w=200",
+        activo: true
+      };
+
+      const { error: kError } = await supabase.from("karatekas").insert(dbPayload);
+      if (kError) {
+        console.warn("Could not insert student to database:", kError);
+      }
+
+      alert("Usuario convertido a Alumno con éxito.");
+      
+      // Reload lists
+      await loadAllData();
+    } catch (err) {
+      console.error(err);
+      alert("Ocurrió un error inesperado al convertir al usuario.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePrintLicense = () => {
     window.print();
   };
@@ -551,6 +645,13 @@ export default function AlumnosPage() {
 
   // Filter teachers based on search queries and roles
   const filteredProfesores = profesores.filter(p => {
+    // Hide the admin@admin.com profile itself to avoid accidental deletion of self
+    if (p.email === 'admin@admin.com') return false;
+    
+    // Hide profiles that are already correctly linked students in karatekas list
+    const isLinkedStudent = karatekas.some(k => k.email?.toLowerCase() === p.email?.toLowerCase());
+    if (p.role === 'karateka' && isLinkedStudent) return false;
+
     const matchesSearch = (p.full_name || '').toLowerCase().includes(search.toLowerCase()) || 
                           (p.email || '').toLowerCase().includes(search.toLowerCase());
     const matchesRole = roleFilter ? p.role === roleFilter : true;
@@ -666,6 +767,8 @@ export default function AlumnosPage() {
             <option value="">Filtro: Todos los roles</option>
             <option value="sensei">Maestro Principal (Sensei)</option>
             <option value="sempai">Maestro Asistente (Sempai)</option>
+            <option value="tutor">Padre de Familia (Tutor)</option>
+            <option value="karateka">Alumno Registrado (Sin Ficha)</option>
           </select>
         )}
       </div>
@@ -765,9 +868,9 @@ export default function AlumnosPage() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Nombre Maestro / Instructor</th>
+                <th>Nombre Registrado</th>
                 <th>Correo Electrónico</th>
-                <th>Rol</th>
+                <th>Rol de Acceso</th>
                 <th>Fecha de Registro</th>
                 <th>Acciones</th>
               </tr>
@@ -781,7 +884,7 @@ export default function AlumnosPage() {
                         {p.avatar_url ? (
                           <img src={p.avatar_url} alt={p.full_name} className={styles.avatarImg} />
                         ) : (
-                          "👨‍🏫"
+                          p.role === 'sensei' || p.role === 'sempai' ? "👨‍🏫" : p.role === 'tutor' ? "👨‍👩‍👦" : "🤖"
                         )}
                       </div>
                       <div>
@@ -794,23 +897,32 @@ export default function AlumnosPage() {
                     <span 
                       className="belt-badge" 
                       style={{ 
-                        backgroundColor: p.role === 'sensei' ? 'var(--brand-red)' : 'var(--brand-gold)',
+                        backgroundColor: p.role === 'sensei' ? 'var(--brand-red)' : p.role === 'sempai' ? 'var(--brand-gold)' : p.role === 'tutor' ? '#3B82F6' : '#6B7280',
                         color: 'white',
                         borderColor: '#475569',
                         fontSize: '0.8rem',
                         padding: '0.2rem 0.6rem'
                       }}
                     >
-                      {p.role === 'sensei' ? 'Maestro Principal (Sensei)' : 'Maestro Asistente (Sempai)'}
+                      {p.role === 'sensei' ? 'Maestro Principal (Sensei)' : p.role === 'sempai' ? 'Maestro Asistente (Sempai)' : p.role === 'tutor' ? 'Padre (Tutor)' : 'Alumno (Sin Ficha)'}
                     </span>
                   </td>
                   <td>{new Date(p.created_at || Date.now()).toLocaleDateString('es-MX')}</td>
                   <td>
                     <div className={styles.actions}>
+                      {p.role !== 'karateka' && (
+                        <button 
+                          className={`${styles.btnAction} ${styles.card}`}
+                          onClick={() => handleConvertToStudent(p.id, p.full_name, p.email)}
+                          style={{ background: '#10B981', color: '#FFF' }}
+                        >
+                          Convertir en Alumno
+                        </button>
+                      )}
                       <button 
                         className={`${styles.btnAction} ${styles.delete}`}
                         onClick={() => handleDeleteProfesor(p.id, p.full_name)}
-                        title="Eliminar Profesor"
+                        title="Eliminar Usuario"
                       >
                         <Trash2 size={14} /> Eliminar
                       </button>
@@ -821,7 +933,7 @@ export default function AlumnosPage() {
               {filteredProfesores.length === 0 && (
                 <tr>
                   <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-tertiary)' }}>
-                    {loading ? 'Cargando maestros...' : 'No se encontraron maestros con los filtros seleccionados.'}
+                    {loading ? 'Cargando usuarios...' : 'No se encontraron usuarios con los filtros seleccionados.'}
                   </td>
                 </tr>
               )}
