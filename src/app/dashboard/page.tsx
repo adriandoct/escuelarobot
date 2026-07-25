@@ -645,7 +645,7 @@ export default function DashboardPage() {
       <motion.div variants={itemVariants} className={styles.metricsGrid}>
         <div className={styles.metricCard}>
           <div className={styles.metricHeader}>
-            <span className={styles.metricTitle}>Alumnos Activos</span>
+            <span className={styles.metricTitle}>Alumnos Inscritos</span>
           <div className={`${styles.metricIcon} ${styles.blue}`}>
             <Users size={24} color="var(--brand-red)" />
           </div>
