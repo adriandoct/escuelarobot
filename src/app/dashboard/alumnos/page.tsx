@@ -70,10 +70,13 @@ export default function AlumnosPage() {
   };
 
   const [karatekas, setKaratekas] = useState<Karateka[]>([]);
+  const [profesores, setProfesores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [beltFilter, setBeltFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [activeTab, setActiveTab] = useState<'alumnos' | 'profesores'>('alumnos');
 
   // Modals
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -105,10 +108,12 @@ export default function AlumnosPage() {
 
   const supabase = createClient();
 
-  // Load Karatekas list
-  const fetchKaratekas = async () => {
+  // Load Karatekas and Profiles (teachers) list
+  const loadAllData = async () => {
     try {
       setLoading(true);
+      
+      // 1. Fetch Students (karatekas)
       const { data, error } = await supabase
         .from("karatekas")
         .select("*")
@@ -163,15 +168,42 @@ export default function AlumnosPage() {
         setKaratekas(parsedData);
         localStorage.setItem("local_karatekas", JSON.stringify(parsedData));
       }
+
+      // 2. Fetch Teachers (profiles table)
+      const { data: pData, error: pError } = await supabase
+        .from("profiles")
+        .select("*")
+        .in("role", ["sensei", "sempai"])
+        .order("full_name", { ascending: true });
+
+      if (pError || !pData || pData.length === 0) {
+        const mockProfs = [
+          { id: "p1", full_name: "Director Maker", email: "admin@admin.com", role: "sensei", created_at: new Date().toISOString() },
+          { id: "p2", full_name: "Mentor Arduino", email: "arduino@dojoia.com", role: "sensei", created_at: new Date().toISOString() },
+          { id: "p3", full_name: "Mentor Scratch", email: "scratch@dojoia.com", role: "sempai", created_at: new Date().toISOString() }
+        ];
+
+        const cachedP = localStorage.getItem("local_profesores");
+        if (cachedP) {
+          setProfesores(JSON.parse(cachedP));
+        } else {
+          setProfesores(mockProfs);
+          localStorage.setItem("local_profesores", JSON.stringify(mockProfs));
+        }
+      } else {
+        setProfesores(pData);
+        localStorage.setItem("local_profesores", JSON.stringify(pData));
+      }
+
     } catch (e) {
-      console.error(e);
+      console.error("Error loading directory data:", e);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchKaratekas();
+    loadAllData();
   }, []);
 
   const getBeltColor = (belt: string) => {
@@ -470,6 +502,32 @@ export default function AlumnosPage() {
     }
   };
 
+  // Delete Profesor
+  const handleDeleteProfesor = async (id: string, nombre: string) => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente a ${nombre} del personal docente?`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("profiles").delete().eq("id", id);
+
+      if (error) {
+        console.error("Error deleting professor profile:", error);
+        alert("Error al eliminar de la base de datos: " + error.message);
+        return;
+      }
+
+      // Delete in local state
+      const updatedList = profesores.filter(p => p.id !== id);
+      setProfesores(updatedList);
+      localStorage.setItem("local_profesores", JSON.stringify(updatedList));
+      alert("Profesor eliminado correctamente.");
+    } catch (err) {
+      console.error(err);
+      alert("Ocurrió un error inesperado al intentar eliminar al profesor.");
+    }
+  };
+
   const handlePrintLicense = () => {
     window.print();
   };
@@ -491,21 +549,73 @@ export default function AlumnosPage() {
     return matchesSearch && matchesBelt && matchesStatus;
   });
 
+  // Filter teachers based on search queries and roles
+  const filteredProfesores = profesores.filter(p => {
+    const matchesSearch = (p.full_name || '').toLowerCase().includes(search.toLowerCase()) || 
+                          (p.email || '').toLowerCase().includes(search.toLowerCase());
+    const matchesRole = roleFilter ? p.role === roleFilter : true;
+    return matchesSearch && matchesRole;
+  });
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1>Directorio de Alumnos</h1>
-          <p>Nómina de alumnos y pases de acceso de la academia IA Make.</p>
+          <h1>Directorio de la Academia</h1>
+          <p>Nómina de alumnos e instructores del Laboratorio STEM.</p>
         </div>
         <div className={styles.headerActions} style={{ marginRight: '8.5rem' }}>
-          <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }} onClick={() => setIsImportOpen(true)}>
-            <Upload size={18} /> Importar Excel/CSV
-          </button>
-          <button className="btn-primary" style={{ background: 'var(--brand-red)', display: 'flex', alignItems: 'center', gap: '0.4rem' }} onClick={handleCreateOpen}>
-            <Plus size={18} /> Registrar Alumno
-          </button>
+          {activeTab === 'alumnos' ? (
+            <>
+              <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }} onClick={() => setIsImportOpen(true)}>
+                <Upload size={18} /> Importar Excel/CSV
+              </button>
+              <button className="btn-primary" style={{ background: 'var(--brand-red)', display: 'flex', alignItems: 'center', gap: '0.4rem' }} onClick={handleCreateOpen}>
+                <Plus size={18} /> Registrar Alumno
+              </button>
+            </>
+          ) : (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, paddingRight: '1rem' }}>
+              *Para registrar nuevos maestros, invítalos a registrarse en la plataforma seleccionando el rol de Maestro.
+            </p>
+          )}
         </div>
+      </div>
+
+      {/* Tabs navigation */}
+      <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '1rem' }}>
+        <button 
+          onClick={() => { setActiveTab('alumnos'); setSearch(""); }}
+          className="btn-secondary"
+          style={{ 
+            background: activeTab === 'alumnos' ? 'var(--brand-red)' : 'transparent',
+            border: activeTab === 'alumnos' ? 'none' : '1px solid var(--border-color)',
+            color: activeTab === 'alumnos' ? 'white' : 'var(--text-primary)',
+            padding: '0.5rem 1.25rem',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: 600,
+            fontSize: '0.9rem'
+          }}
+        >
+          Alumnos ({filteredKaratekas.length})
+        </button>
+        <button 
+          onClick={() => { setActiveTab('profesores'); setSearch(""); }}
+          className="btn-secondary"
+          style={{ 
+            background: activeTab === 'profesores' ? 'var(--brand-red)' : 'transparent',
+            border: activeTab === 'profesores' ? 'none' : '1px solid var(--border-color)',
+            color: activeTab === 'profesores' ? 'white' : 'var(--text-primary)',
+            padding: '0.5rem 1.25rem',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: 600,
+            fontSize: '0.9rem'
+          }}
+        >
+          Maestros e Instructores ({filteredProfesores.length})
+        </button>
       </div>
 
       {/* Filters bar */}
@@ -514,128 +624,211 @@ export default function AlumnosPage() {
           <Search size={18} color="var(--text-secondary)" />
           <input 
             type="text" 
-            placeholder="Buscar por nombre, matrícula o tutor..." 
+            placeholder={activeTab === 'alumnos' ? "Buscar por nombre, matrícula o tutor..." : "Buscar por nombre o correo..."} 
             className={styles.searchInput}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        
-        <select 
-          className={styles.selectInput}
-          value={beltFilter}
-          onChange={(e) => setBeltFilter(e.target.value)}
-        >
-          <option value="">Filtro: Todos los niveles</option>
-          <option value="blanco">Nivel 1: Scratch STEM</option>
-          <option value="amarillo">Nivel 2: Arduino Maker</option>
-          <option value="naranja">Nivel 3: ESP32 IoT</option>
-          <option value="verde">Nivel 4: Raspberry Pi</option>
-          <option value="azul">Nivel 5: Python Code</option>
-          <option value="marron">Nivel 6: AI & ML</option>
-          <option value="negro">Nivel 7: Competidor Master</option>
-        </select>
+        {activeTab === 'alumnos' ? (
+          <>
+            <select 
+              className={styles.selectInput}
+              value={beltFilter}
+              onChange={(e) => setBeltFilter(e.target.value)}
+            >
+              <option value="">Filtro: Todos los niveles</option>
+              <option value="blanco">Nivel 1: Scratch STEM</option>
+              <option value="amarillo">Nivel 2: Arduino Maker</option>
+              <option value="naranja">Nivel 3: ESP32 IoT</option>
+              <option value="verde">Nivel 4: Raspberry Pi</option>
+              <option value="azul">Nivel 5: Python Code</option>
+              <option value="marron">Nivel 6: AI & ML</option>
+              <option value="negro">Nivel 7: Competidor Master</option>
+            </select>
 
-        <select 
-          className={styles.selectInput}
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="activos">Estado: Activos</option>
-          <option value="inactivos">Estado: Inactivos</option>
-          <option value="todos">Estado: Todos</option>
-        </select>
+            <select 
+              className={styles.selectInput}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="todos">Estado: Todos</option>
+              <option value="activos">Estado: Activos</option>
+              <option value="inactivos">Estado: Inactivos</option>
+            </select>
+          </>
+        ) : (
+          <select 
+            className={styles.selectInput}
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+          >
+            <option value="">Filtro: Todos los roles</option>
+            <option value="sensei">Maestro Principal (Sensei)</option>
+            <option value="sempai">Maestro Asistente (Sempai)</option>
+          </select>
+        )}
       </div>
 
       {/* Grid List */}
-      <div className={styles.tableCard}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Nombre Alumno</th>
-              <th>Matrícula</th>
-              <th>Nivel de Robótica</th>
-              <th>Especialidad</th>
-              <th>Tutor responsable</th>
-              <th>Teléfono</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredKaratekas.map((k) => (
-              <tr key={k.id}>
-                <td>
-                  <div className={styles.studentCell}>
-                    <div className={styles.avatar}>
-                      {k.foto_url ? (
-                        <img src={k.foto_url} alt={k.nombre} className={styles.avatarImg} />
-                      ) : (
-                        "🤖"
-                      )}
+      {activeTab === 'alumnos' ? (
+        <div className={styles.tableCard}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Nombre Alumno</th>
+                <th>Matrícula</th>
+                <th>Nivel de Robótica</th>
+                <th>Especialidad</th>
+                <th>Tutor responsable</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredKaratekas.map((k) => (
+                <tr key={k.id}>
+                  <td>
+                    <div className={styles.studentCell}>
+                      <div className={styles.avatar}>
+                        {k.foto_url ? (
+                          <img src={k.foto_url} alt={k.nombre} className={styles.avatarImg} />
+                        ) : (
+                          "🤖"
+                        )}
+                      </div>
+                      <div>
+                        <span style={{ fontWeight: 600 }}>{k.nombre}</span>
+                        {k.email && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.1rem' }}>
+                            🔑 {k.email}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <span style={{ fontWeight: 600 }}>{k.nombre}</span>
-                      {k.email && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.1rem' }}>
-                          🔑 {k.email}
-                        </div>
-                      )}
+                  </td>
+                  <td><span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{k.matricula}</span></td>
+                  <td>
+                    <span className={`belt-badge ${getBeltColor(k.cinturon)}`}>
+                      {getRoboticsLevelName(k.cinturon)}
+                    </span>
+                  </td>
+                  <td>{k.grado}</td>
+                  <td>{k.tutor}</td>
+                  <td>{k.telefono}</td>
+                  <td>
+                    <span className={`${styles.statusBadge} ${k.activo !== false ? styles.activo : styles.inactivo}`}>
+                      {k.activo !== false ? "Activo" : "Inactivo"}
+                    </span>
+                  </td>
+                  <td>
+                    <div className={styles.actions}>
+                      <button 
+                        className={`${styles.btnAction} ${styles.edit}`}
+                        onClick={() => handleEditOpen(k)}
+                      >
+                        Editar
+                      </button>
+                      <button 
+                        className={`${styles.btnAction} ${styles.card}`}
+                        onClick={() => {
+                          setSelectedKarateka(k);
+                          setIsLicenseOpen(true);
+                        }}
+                      >
+                        <Award size={14} /> Credencial
+                      </button>
+                      <button 
+                        className={`${styles.btnAction} ${styles.delete}`}
+                        onClick={() => handleDelete(k.id, k.nombre)}
+                        title="Eliminar Alumno"
+                      >
+                        <Trash2 size={14} /> Eliminar
+                      </button>
                     </div>
-                  </div>
-                </td>
-                <td><span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{k.matricula}</span></td>
-                <td>
-                  <span className={`belt-badge ${getBeltColor(k.cinturon)}`}>
-                    {getRoboticsLevelName(k.cinturon)}
-                  </span>
-                </td>
-                <td>{k.grado}</td>
-                <td>{k.tutor}</td>
-                <td>{k.telefono}</td>
-                <td>
-                  <span className={`${styles.statusBadge} ${k.activo !== false ? styles.activo : styles.inactivo}`}>
-                    {k.activo !== false ? "Activo" : "Inactivo"}
-                  </span>
-                </td>
-                <td>
-                  <div className={styles.actions}>
-                    <button 
-                      className={`${styles.btnAction} ${styles.edit}`}
-                      onClick={() => handleEditOpen(k)}
-                    >
-                      Editar
-                    </button>
-                    <button 
-                      className={`${styles.btnAction} ${styles.card}`}
-                      onClick={() => {
-                        setSelectedKarateka(k);
-                        setIsLicenseOpen(true);
+                  </td>
+                </tr>
+              ))}
+              {filteredKaratekas.length === 0 && (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-tertiary)' }}>
+                    {loading ? 'Cargando alumnos...' : 'No se encontraron alumnos con los filtros seleccionados.'}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className={styles.tableCard}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Nombre Maestro / Instructor</th>
+                <th>Correo Electrónico</th>
+                <th>Rol</th>
+                <th>Fecha de Registro</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProfesores.map((p) => (
+                <tr key={p.id}>
+                  <td>
+                    <div className={styles.studentCell}>
+                      <div className={styles.avatar}>
+                        {p.avatar_url ? (
+                          <img src={p.avatar_url} alt={p.full_name} className={styles.avatarImg} />
+                        ) : (
+                          "👨‍🏫"
+                        )}
+                      </div>
+                      <div>
+                        <span style={{ fontWeight: 600 }}>{p.full_name}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{p.email}</td>
+                  <td>
+                    <span 
+                      className="belt-badge" 
+                      style={{ 
+                        backgroundColor: p.role === 'sensei' ? 'var(--brand-red)' : 'var(--brand-gold)',
+                        color: 'white',
+                        borderColor: '#475569',
+                        fontSize: '0.8rem',
+                        padding: '0.2rem 0.6rem'
                       }}
                     >
-                      <Award size={14} /> Credencial
-                    </button>
-                    <button 
-                      className={`${styles.btnAction} ${styles.delete}`}
-                      onClick={() => handleDelete(k.id, k.nombre)}
-                      title="Eliminar Karateka"
-                    >
-                      <Trash2 size={14} /> Eliminar
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {filteredKaratekas.length === 0 && (
-              <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-tertiary)' }}>
-                  {loading ? 'Cargando karatekas...' : 'No se encontraron karatekas con los filtros seleccionados.'}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                      {p.role === 'sensei' ? 'Maestro Principal (Sensei)' : 'Maestro Asistente (Sempai)'}
+                    </span>
+                  </td>
+                  <td>{new Date(p.created_at || Date.now()).toLocaleDateString('es-MX')}</td>
+                  <td>
+                    <div className={styles.actions}>
+                      <button 
+                        className={`${styles.btnAction} ${styles.delete}`}
+                        onClick={() => handleDeleteProfesor(p.id, p.full_name)}
+                        title="Eliminar Profesor"
+                      >
+                        <Trash2 size={14} /> Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredProfesores.length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-tertiary)' }}>
+                    {loading ? 'Cargando maestros...' : 'No se encontraron maestros con los filtros seleccionados.'}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* MODAL 1: Create or Edit Form */}
       {isFormOpen && (
