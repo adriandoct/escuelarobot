@@ -56,6 +56,11 @@ export default async function DashboardLayout({
 
   const isSensei = role === "sensei";
 
+  const isMockSupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL || 
+                         !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+                         String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY).includes("reemplázala") ||
+                         !String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY).startsWith("eyJ");
+
   return (
     <div className={styles.dashboardLayout}>
       <aside className={styles.sidebar}>
@@ -190,6 +195,31 @@ export default async function DashboardLayout({
             </button>
           </form>
         </div>
+
+        {isMockSupabase && (
+          <div style={{
+            background: 'rgba(234, 179, 8, 0.1)',
+            border: '1px solid rgba(234, 179, 8, 0.3)',
+            borderRadius: '8px',
+            padding: '1.25rem 1.75rem',
+            marginBottom: '2rem',
+            color: '#eab308',
+            fontSize: '0.9rem',
+            lineHeight: '1.5',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1.25rem',
+            maxWidth: '1200px'
+          }} className="no-print">
+            <span style={{ fontSize: '1.8rem' }}>⚠️</span>
+            <div>
+              <strong style={{ display: 'block', marginBottom: '0.2rem', color: '#f59e0b', fontSize: '1rem' }}>⚠️ Modo Simulado Activo</strong>
+              Las credenciales de Supabase en tu entorno local o en Render son incorrectas (la clave pública actual empieza con <code>sb_publishable_</code> que pertenece a Stripe).
+              Los alumnos que registres desde tu navegador <strong>solo existirán en la memoria de este navegador</strong> y no se sincronizarán con otros dispositivos o computadoras.
+            </div>
+          </div>
+        )}
+        
         {children}
       </main>
     </div>
