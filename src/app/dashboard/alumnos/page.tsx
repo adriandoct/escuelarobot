@@ -236,6 +236,44 @@ export default function AlumnosPage() {
         }
       }
 
+      // 4. Client-side cookie check for mock registration fallback
+      if (typeof window !== "undefined") {
+        const getCookie = (name: string) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return decodeURIComponent(parts.pop()!.split(';').shift()!);
+          return "";
+        };
+
+        const cookieEmail = getCookie("dojoia_email");
+        const cookieName = getCookie("dojoia_name");
+        const cookieRole = getCookie("dojoia_role");
+
+        if (cookieEmail && cookieRole === "karateka") {
+          const exists = activeStudents.some((k: any) => k.email?.toLowerCase() === cookieEmail.toLowerCase());
+          if (!exists) {
+            const randomNum = Math.floor(100 + Math.random() * 900);
+            const matricula = `KA-2026-${randomNum}`;
+            const mockStudent = {
+              id: `temp-${randomNum}`,
+              matricula,
+              nombre: cookieName || "Alumno Registrado",
+              cinturon: "blanco",
+              grado: "10° Kyu",
+              tutor: `${cookieName || "Alumno Registrado"} [credentials:${cookieEmail.toLowerCase()}:123456]`,
+              telefono: "+5215500000000",
+              foto_url: "https://images.unsplash.com/photo-1542435503-956c469947f6?auto=format&fit=crop&q=80&w=200",
+              activo: true,
+              email: cookieEmail.toLowerCase(),
+              password: "123456"
+            };
+            activeStudents.push(mockStudent);
+            setKaratekas([...activeStudents]);
+            localStorage.setItem("local_karatekas", JSON.stringify(activeStudents));
+          }
+        }
+      }
+
       setProfesores(finalProfilesList);
 
     } catch (e) {

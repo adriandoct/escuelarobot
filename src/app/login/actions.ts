@@ -33,7 +33,8 @@ export async function login(formData: FormData) {
 
   const isMockSupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL || 
                          !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-                         String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY).includes("reemplázala");
+                         String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY).includes("reemplázala") ||
+                         !String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY).startsWith("eyJ");
 
   // FIXED ADMIN SENSEI BYPASS
   const isAdminEmail = email === "admin@admin.com";
@@ -188,7 +189,12 @@ export async function signup(formData: FormData) {
 
   if (error) {
     // Fallback for offline signup demo
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY).includes("reemplázala")) {
+    const isMock = !process.env.NEXT_PUBLIC_SUPABASE_URL || 
+                   !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+                   String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY).includes("reemplázala") ||
+                   !String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY).startsWith("eyJ");
+
+    if (isMock) {
       cookieStore.set("dojoia_role", role, { path: "/" });
       cookieStore.set("dojoia_email", email, { path: "/" });
       cookieStore.set("dojoia_name", fullName, { path: "/" });
