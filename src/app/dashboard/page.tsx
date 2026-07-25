@@ -147,6 +147,36 @@ export default function DashboardPage() {
     setStudentPlan(plan);
     setPaymentStatus(status);
 
+    // Sync newly registered student to local storage in mock mode so they show up for the admin
+    if (userRole === "karateka" && email) {
+      try {
+        const cached = localStorage.getItem("local_karatekas");
+        let activeStudents = cached ? JSON.parse(cached) : [];
+        const exists = activeStudents.some((k: any) => k.email?.toLowerCase() === email.toLowerCase());
+        if (!exists) {
+          const randomNum = Math.floor(100 + Math.random() * 900);
+          const matricula = `KA-2026-${randomNum}`;
+          const newStudent = {
+            id: `temp-${randomNum}`,
+            matricula,
+            nombre: name || "Alumno Registrado",
+            cinturon: "blanco",
+            grado: "10° Kyu",
+            tutor: `${name || "Alumno Registrado"} [credentials:${email.toLowerCase()}:123456]`,
+            telefono: "+5215500000000",
+            foto_url: "https://images.unsplash.com/photo-1542435503-956c469947f6?auto=format&fit=crop&q=80&w=200",
+            activo: true,
+            email: email.toLowerCase(),
+            password: "123456"
+          };
+          activeStudents.push(newStudent);
+          localStorage.setItem("local_karatekas", JSON.stringify(activeStudents));
+        }
+      } catch (e) {
+        console.warn("Could not sync student registration to localStorage", e);
+      }
+    }
+
     if (userRole === "sensei") {
       loadSenseiData();
     } else {
