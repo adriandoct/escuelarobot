@@ -274,3 +274,79 @@
 .secondaryDownloadBtn:hover {
   background: var(--bg-tertiary);
 }
+
+/* Visor de PDF Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+}
+
+.playerCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 850px;
+  height: 90vh;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.playerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.playerHeader h2 {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.pdfWrapper {
+  flex-grow: 1;
+  width: 100%;
+  background: #525659;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.secondaryViewBtn {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--brand-red);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.secondaryViewBtn:hover {
+  background: var(--brand-red);
+  color: white;
+  border-color: var(--brand-red);
+}
+

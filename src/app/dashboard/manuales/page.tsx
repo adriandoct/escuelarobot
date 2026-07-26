@@ -11,7 +11,8 @@ import {
   CheckCircle2, 
   AlertCircle, 
   Download,
-  Eye
+  Eye,
+  X
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
@@ -40,6 +41,20 @@ export default function ManualesPage() {
   const [loading, setLoading] = useState(true);
   const [uploadingFor, setUploadingFor] = useState<{ level: string, type: string } | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ text: string; type: 'success' | 'error' | '' }>({ text: '', type: '' });
+
+  // Preview modal states
+  const [selectedPdf, setSelectedPdf] = useState<{ url: string; titulo: string; nivelName: string } | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const handleOpenPreview = (url: string, titulo: string, nivelName: string) => {
+    setSelectedPdf({ url, titulo, nivelName });
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setSelectedPdf(null);
+  };
 
   const supabase = createClient();
 
@@ -351,14 +366,17 @@ export default function ManualesPage() {
                         <div className={styles.pdfActions}>
                           {materiales[p.levelEnum]?.carta_descriptiva_url ? (
                             <>
-                              <a 
-                                href={materiales[p.levelEnum].carta_descriptiva_url} 
-                                target="_blank" 
-                                rel="noreferrer" 
+                              <button 
+                                onClick={() => handleOpenPreview(
+                                  materiales[p.levelEnum].carta_descriptiva_url,
+                                  `Carta Descriptiva - ${p.belt}`,
+                                  `${p.belt} (${p.kyu})`
+                                )}
                                 className={styles.viewLink}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                               >
                                 <Eye size={14} /> Ver PDF
-                              </a>
+                              </button>
                               <button 
                                 onClick={() => handleDelete(p.levelEnum, 'carta')} 
                                 className={styles.deleteBtn}
@@ -394,14 +412,17 @@ export default function ManualesPage() {
                         <div className={styles.pdfActions}>
                           {materiales[p.levelEnum]?.manual_instructor_url ? (
                             <>
-                              <a 
-                                href={materiales[p.levelEnum].manual_instructor_url} 
-                                target="_blank" 
-                                rel="noreferrer" 
+                              <button 
+                                onClick={() => handleOpenPreview(
+                                  materiales[p.levelEnum].manual_instructor_url,
+                                  `Manual del Instructor - ${p.belt}`,
+                                  `${p.belt} (${p.kyu})`
+                                )}
                                 className={styles.viewLink}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                               >
                                 <Eye size={14} /> Ver PDF
-                              </a>
+                              </button>
                               <button 
                                 onClick={() => handleDelete(p.levelEnum, 'instructor')} 
                                 className={styles.deleteBtn}
@@ -437,14 +458,17 @@ export default function ManualesPage() {
                         <div className={styles.pdfActions}>
                           {materiales[p.levelEnum]?.manual_participante_url ? (
                             <>
-                              <a 
-                                href={materiales[p.levelEnum].manual_participante_url} 
-                                target="_blank" 
-                                rel="noreferrer" 
+                              <button 
+                                onClick={() => handleOpenPreview(
+                                  materiales[p.levelEnum].manual_participante_url,
+                                  `Manual del Participante - ${p.belt}`,
+                                  `${p.belt} (${p.kyu})`
+                                )}
                                 className={styles.viewLink}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                               >
                                 <Eye size={14} /> Ver PDF
-                              </a>
+                              </button>
                               <button 
                                 onClick={() => handleDelete(p.levelEnum, 'participante')} 
                                 className={styles.deleteBtn}
@@ -497,7 +521,18 @@ export default function ManualesPage() {
                 </p>
 
                 {materiales[studentBelt]?.manual_participante_url ? (
-                  <div style={{ marginTop: '0.5rem' }}>
+                  <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <button 
+                      onClick={() => handleOpenPreview(
+                        materiales[studentBelt].manual_participante_url,
+                        `Manual del Participante - ${getRoboticsLevelName(studentBelt)}`,
+                        `${getRoboticsLevelName(studentBelt)} (Cinturón Activo)`
+                      )}
+                      className={styles.downloadBtn}
+                      style={{ display: 'inline-flex', alignSelf: 'flex-start', background: 'var(--brand-red)', color: '#FFF' }}
+                    >
+                      <Eye size={18} /> Ver en Línea
+                    </button>
                     <a 
                       href={materiales[studentBelt].manual_participante_url} 
                       target="_blank" 
@@ -561,16 +596,30 @@ export default function ManualesPage() {
                         </p>
                       </div>
 
-                      <div style={{ marginTop: '0.5rem' }}>
+                      <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                         {hasManual ? (
-                          <a 
-                            href={materiales[p.levelEnum].manual_participante_url} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className={styles.secondaryDownloadBtn}
-                          >
-                            <Download size={14} /> Descargar Manual
-                          </a>
+                          <>
+                            <button 
+                              onClick={() => handleOpenPreview(
+                                materiales[p.levelEnum].manual_participante_url, 
+                                `Manual del Participante - ${p.belt}`, 
+                                `${p.belt} (${p.kyu})`
+                              )} 
+                              className={styles.secondaryViewBtn}
+                              style={{ flex: 1 }}
+                            >
+                              <Eye size={14} /> Ver en línea
+                            </button>
+                            <a 
+                              href={materiales[p.levelEnum].manual_participante_url} 
+                              target="_blank" 
+                              rel="noreferrer" 
+                              className={styles.secondaryDownloadBtn}
+                              style={{ flex: 1 }}
+                            >
+                              <Download size={14} /> Descargar
+                            </a>
+                          </>
                         ) : (
                           <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
                             Próximamente disponible
@@ -584,6 +633,59 @@ export default function ManualesPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Pop-up PDF Preview Overlay */}
+      {isPreviewOpen && selectedPdf && (
+        <div 
+          className={styles.modalOverlay}
+          onClick={(e) => { if (e.target === e.currentTarget) handleClosePreview(); }}
+          style={{ cursor: 'pointer' }}
+        >
+          <div className={styles.playerCard} style={{ cursor: 'default' }}>
+            <div className={styles.playerHeader}>
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FileText size={20} style={{ color: 'var(--brand-red)' }} />
+                {selectedPdf.titulo}
+              </h2>
+              <button onClick={handleClosePreview} style={{ color: 'var(--text-secondary)', cursor: 'pointer', border: 'none', background: 'transparent' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className={styles.pdfWrapper}>
+              <iframe
+                src={`${selectedPdf.url}#toolbar=0`}
+                title={selectedPdf.titulo}
+                style={{ width: '100%', height: '100%', border: 'none' }}
+              />
+            </div>
+
+            <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--border-color)', background: 'var(--bg-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                Nivel: <strong style={{ color: 'var(--text-primary)' }}>{selectedPdf.nivelName}</strong>
+              </span>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <a 
+                  href={selectedPdf.url} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className={styles.downloadBtn}
+                  style={{ display: 'inline-flex', gap: '0.35rem', textDecoration: 'none', height: 'fit-content' }}
+                >
+                  <Download size={14} /> Descargar PDF
+                </a>
+                <button 
+                  onClick={handleClosePreview} 
+                  className={styles.secondaryDownloadBtn}
+                  style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', cursor: 'pointer', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', fontWeight: 600 }}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
