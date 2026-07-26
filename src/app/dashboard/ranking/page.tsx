@@ -41,7 +41,7 @@ export default function RankingPage() {
 
   const getRoboticsLevelName = (belt: string) => {
     switch (belt?.toLowerCase()) {
-      case "blanco": return "Scratch STEM (Nivel 1)";
+      case "blanco": return "Robot seguidor de linea";
       case "amarillo": return "Arduino Maker (Nivel 2)";
       case "naranja": return "ESP32 IoT (Nivel 3)";
       case "verde": return "Raspberry Pi (Nivel 4)";
