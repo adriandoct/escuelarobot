@@ -587,7 +587,8 @@ export default function Home() {
                   src={getYouTubeEmbedUrl(featuredVideo.url) || undefined}
                   title={featuredVideo.titulo}
                   style={{ width: '100%', height: '100%', border: 'none' }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
                   allowFullScreen
                 />
               ) : (
@@ -894,7 +895,8 @@ export default function Home() {
                   src={getYouTubeEmbedUrl(selectedVideo.url) || undefined}
                   title={selectedVideo.titulo}
                   style={{ width: '100%', height: '100%', border: 'none', aspectRatio: '16/9' }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
                   allowFullScreen
                 />
               ) : (
