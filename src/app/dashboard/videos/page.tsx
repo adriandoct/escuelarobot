@@ -221,7 +221,7 @@ export default function VideosPage() {
     }
   };
 
-  // Fetch all videos (Supabase -> LocalStorage -> Default seed)
+  // Fetch all videos (Supabase -> merge LocalStorage -> Default seed)
   const loadVideos = async () => {
     try {
       setLoading(true);
@@ -230,17 +230,28 @@ export default function VideosPage() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (data && data.length > 0) {
-        setVideos(data);
-        localStorage.setItem("dojo_videos", JSON.stringify(data));
+      const dbVideos: TrainingVideo[] = (data && !error) ? data : [];
+
+      // Always merge with localStorage so locally-saved videos are not lost
+      const cached = localStorage.getItem("dojo_videos");
+      let localVideos: TrainingVideo[] = [];
+      if (cached) {
+        try { localVideos = JSON.parse(cached); } catch (_) {}
+      }
+
+      // Merge: DB is source of truth; add local items not yet in DB
+      const dbIds = new Set(dbVideos.map((v) => v.id));
+      const localOnly = localVideos.filter(
+        (lv) => !dbIds.has(lv.id) && !lv.id.startsWith("v1") && !lv.id.startsWith("v2") && !lv.id.startsWith("v3")
+      );
+      const merged = [...dbVideos, ...localOnly];
+
+      if (merged.length > 0) {
+        setVideos(merged);
+        localStorage.setItem("dojo_videos", JSON.stringify(merged));
       } else {
-        const cached = localStorage.getItem("dojo_videos");
-        if (cached && JSON.parse(cached).length > 0) {
-          setVideos(JSON.parse(cached));
-        } else {
-          setVideos(DEFAULT_VIDEOS);
-          localStorage.setItem("dojo_videos", JSON.stringify(DEFAULT_VIDEOS));
-        }
+        setVideos(DEFAULT_VIDEOS);
+        localStorage.setItem("dojo_videos", JSON.stringify(DEFAULT_VIDEOS));
       }
     } catch (e) {
       console.warn("Supabase database fetch error, using local storage fallback", e);
@@ -409,8 +420,8 @@ export default function VideosPage() {
       setVideos(updatedList);
       localStorage.setItem("dojo_videos", JSON.stringify(updatedList));
 
-      if (hasUploadError || isBlob || (!insertSuccess && !url)) {
-        let detailedMsg = "⚠️ EL VIDEO SOLO SE GUARDÓ LOCALMENTE EN ESTE NAVEGADOR Y NO SE VERÁ EN TU CELULAR.\n\n";
+      if (hasUploadError || isBlob || !insertSuccess) {
+        let detailedMsg = "⚠️ EL VIDEO SOLO SE GUARDÓ LOCALMENTE EN ESTE NAVEGADOR Y NO SE VERÁ EN OTROS DISPOSITIVOS.\n\n";
         
         if (hasUploadError) {
           detailedMsg += `Razón (Almacenamiento): La subida del archivo falló (${uploadErrorMsg || "No hay bucket configurado o error de conexión"}).\n\n`;
@@ -419,16 +430,17 @@ export default function VideosPage() {
           detailedMsg += "2. Asegúrate de que exista un bucket público llamado exactamente: videos\n";
           detailedMsg += "3. Verifica el tamaño del archivo (los planes gratuitos de Supabase pueden limitar el tamaño de subida a 50MB).\n\n";
         } else if (!insertSuccess) {
-          detailedMsg += `Razón (Base de Datos): La subida al Storage fue exitosa, pero falló el registro en la base de datos de Supabase.\n`;
+          detailedMsg += `Razón (Base de Datos): El enlace de YouTube se recibió, pero falló el registro en la base de datos de Supabase.\n`;
           detailedMsg += `Detalle del error: ${dbErrorMsg || "Error desconocido o denegado por políticas RLS"}.\n\n`;
           detailedMsg += "Para solucionarlo:\n";
-          detailedMsg += "1. Ejecuta el script SQL 'create_videos_table.sql' completo en el SQL Editor de tu panel de Supabase.\n";
-          detailedMsg += "2. Esto habilitará la tabla de videos y aplicará las políticas de Row Level Security (RLS) necesarias para que permita insertar registros de forma pública.\n\n";
-        } else {
+          detailedMsg += "1. Ve al SQL Editor de Supabase y ejecuta el script 'create_videos_table.sql' completo.\n";
+          detailedMsg += "2. Esto crea la tabla de videos con políticas RLS que permiten insertar registros.\n";
+          detailedMsg += "3. Una vez corregido, elimina este video con el ícono de basura y vuelve a pegarlo.\n\n";
+        } else if (isBlob) {
           detailedMsg += `Razón: Se usó una URL temporal local 'blob:'.\n\n`;
         }
         
-        detailedMsg += "Una vez corregido el problema en Supabase, elimina este video con el botón rojo 'Eliminar Video Expirado' y vuelve a subirlo.";
+        detailedMsg += "Una vez corregido el problema en Supabase, elimina este video y vuelve a subirlo para que quede guardado en la nube.";
 
         setStatusMsg({
           text: detailedMsg,
