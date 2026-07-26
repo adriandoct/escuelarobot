@@ -654,16 +654,22 @@ export default function ManualesPage() {
             </div>
 
             <div className={styles.pdfWrapper}>
+              {/* Google Docs Viewer proxy renders PDFs from any public URL without CORS/Content-Disposition issues */}
               <iframe
-                src={`${selectedPdf.url}#toolbar=0`}
+                key={selectedPdf.url}
+                src={`https://docs.google.com/gview?url=${encodeURIComponent(selectedPdf.url)}&embedded=true`}
                 title={selectedPdf.titulo}
                 style={{ width: '100%', height: '100%', border: 'none' }}
+                allow="autoplay"
               />
             </div>
 
             <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--border-color)', background: 'var(--bg-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                 Nivel: <strong style={{ color: 'var(--text-primary)' }}>{selectedPdf.nivelName}</strong>
+                <span style={{ marginLeft: '0.75rem', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                  · Si el visor no carga, usa el botón de descarga ↓
+                </span>
               </span>
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <a 
