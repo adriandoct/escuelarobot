@@ -164,69 +164,82 @@ export default function ManualesPage() {
 
     try {
       setUploadingFor({ level, type });
-      setStatusMsg({ text: `Subiendo archivo a ${level}...`, type: '' });
+      setStatusMsg({ text: `Subiendo archivo PDF a Supabase Storage...`, type: '' });
 
       let finalUrl = "";
+      let storageOk = false;
 
-      if (!supabase.storage) {
-        console.warn("Supabase storage is not initialized (offline/mock mode). Falling back to Object URL.");
-        finalUrl = URL.createObjectURL(file);
-      } else {
-        const fileName = `${level}-${type}-${Date.now()}.pdf`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('materiales')
-          .upload(fileName, file, {
-            cacheControl: '3600',
-            upsert: true
-          });
+      const fileName = `${level}-${type}-${Date.now()}.pdf`;
 
-        if (uploadError) {
-          console.warn("Supabase storage upload failed, using fallback Object URL:", uploadError);
-          finalUrl = URL.createObjectURL(file);
-        } else {
-          const { data: { publicUrl } } = supabase.storage
-            .from('materiales')
-            .getPublicUrl(fileName);
-          finalUrl = publicUrl;
-        }
+      const { error: uploadError } = await supabase.storage
+        .from('materiales')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) {
+        setStatusMsg({ 
+          text: `❌ Error al subir a Storage: ${uploadError.message}\n\nVerifica que el bucket "materiales" exista y sea público en Supabase → Storage.`, 
+          type: "error" 
+        });
+        setUploadingFor(null);
+        return;
       }
 
-      const existingRecord = materiales[level] || {};
+      storageOk = true;
+      const { data: { publicUrl } } = supabase.storage
+        .from('materiales')
+        .getPublicUrl(fileName);
+      finalUrl = publicUrl;
+
+      setStatusMsg({ text: `✅ Archivo subido al Storage. Guardando en base de datos...`, type: '' });
+
       const colName = type === 'carta' ? 'carta_descriptiva_url' : type === 'instructor' ? 'manual_instructor_url' : 'manual_participante_url';
-      const updatedRecord = {
-        ...existingRecord,
+
+      // Clean upsert payload — only include columns that exist in the table (no id/created_at from localStorage)
+      const upsertPayload = {
         nivel: level,
+        carta_descriptiva_url: materiales[level]?.carta_descriptiva_url ?? null,
+        manual_instructor_url: materiales[level]?.manual_instructor_url ?? null,
+        manual_participante_url: materiales[level]?.manual_participante_url ?? null,
         [colName]: finalUrl,
-        updated_at: new Date().toISOString()
       };
 
       const { error: dbError } = await supabase
         .from('materiales_nivel')
-        .upsert(updatedRecord, { onConflict: 'nivel' });
+        .upsert(upsertPayload, { onConflict: 'nivel' });
 
       if (dbError) {
-        console.warn("Supabase database upsert failed, updating local state only:", dbError);
+        // Show visible error — do NOT show success if DB failed
+        setStatusMsg({ 
+          text: `⚠️ El archivo se subió al Storage pero NO se guardó en la base de datos.\n\nError: ${dbError.message}\n\nSolución: Ejecuta el script "create_materiales_table.sql" en el SQL Editor de Supabase para crear la tabla y sus políticas RLS.`, 
+          type: "error" 
+        });
+        // Still update local state so they see it this session
+        const newMateriales = { ...materiales, [level]: { ...upsertPayload } };
+        setMateriales(newMateriales);
+        localStorage.setItem("dojo_materiales", JSON.stringify(newMateriales));
+        setUploadingFor(null);
+        return;
       }
 
-      const newMateriales = {
-        ...materiales,
-        [level]: updatedRecord
-      };
+      // Full success
+      const newMateriales = { ...materiales, [level]: { ...upsertPayload } };
       setMateriales(newMateriales);
       localStorage.setItem("dojo_materiales", JSON.stringify(newMateriales));
 
-      setStatusMsg({ text: "¡Archivo subido exitosamente!", type: "success" });
+      setStatusMsg({ text: "✅ ¡Archivo guardado correctamente en Supabase! Ya es visible en todos los dispositivos.", type: "success" });
+      setTimeout(() => setStatusMsg({ text: '', type: '' }), 8000);
+
     } catch (err: any) {
       console.error(err);
-      setStatusMsg({ text: err.message || "Error al subir el archivo.", type: "error" });
+      setStatusMsg({ text: `❌ Error inesperado: ${err.message || "Error al subir el archivo."}`, type: "error" });
     } finally {
       setUploadingFor(null);
-      setTimeout(() => {
-        setStatusMsg({ text: '', type: '' });
-      }, 4000);
     }
   };
+
 
   const handleDelete = async (level: string, type: 'carta' | 'instructor' | 'participante') => {
     if (!window.confirm("¿Estás seguro de que deseas eliminar este archivo?")) return;
