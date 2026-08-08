@@ -30,6 +30,17 @@ function getYouTubeEmbedUrl(url: string) {
     : null;
 }
 
+// Helper function to extract YouTube thumbnail
+function getYouTubeThumbnail(url: string) {
+  if (!url) return null;
+  const cleanUrl = url.trim();
+  const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/|youtube-nocookie\.com\/embed\/)([a-zA-Z0-9_-]{11})/;
+  const match = cleanUrl.match(regExp);
+  return (match && match[1].length === 11) 
+    ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` 
+    : null;
+}
+
 // Client-side helper to read cookies
 const getCookie = (name: string): string => {
   if (typeof document === 'undefined') return '';
@@ -603,9 +614,9 @@ export default function Home() {
                 <div key={curso.id} style={{ background: 'var(--bg-tertiary)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000' }}>
                     <img 
-                      src={curso.thumbnail_url || "/ia-make-logo.png"} 
+                      src={curso.thumbnail_url || getYouTubeThumbnail(curso.video_intro_url) || "/ia-make-logo.png"} 
                       alt={curso.titulo} 
-                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: curso.thumbnail_url ? 'cover' : 'contain', padding: curso.thumbnail_url ? '0' : '2rem' }}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: (curso.thumbnail_url || getYouTubeThumbnail(curso.video_intro_url)) ? 'cover' : 'contain', padding: (curso.thumbnail_url || getYouTubeThumbnail(curso.video_intro_url)) ? '0' : '2rem' }}
                     />
                     <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'var(--success)', color: '#fff', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
                       NUEVO
@@ -620,9 +631,9 @@ export default function Home() {
                       <span style={{ fontSize: '0.85rem', color: 'var(--brand-gold)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <GraduationCap size={16} /> {curso.nivel}
                       </span>
-                      {curso.precio > 0 ? (
+                      {curso.precio > 0 || !curso.precio ? (
                         <span style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--text-primary)' }}>
-                          ${curso.precio.toFixed(2)}
+                          ${(curso.precio || 1000).toFixed(2)}
                         </span>
                       ) : (
                         <span style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--success)' }}>
@@ -635,7 +646,7 @@ export default function Home() {
                       className={styles.btnPrimary} 
                       style={{ width: '100%', textAlign: 'center', padding: '0.8rem' }}
                     >
-                      {curso.mercadopago_url ? "Comprar e Inscribirse" : "Inscribirse"}
+                      {curso.mercadopago_url || !curso.precio ? "Comprar e Inscribirse" : "Inscribirse"}
                     </Link>
                   </div>
                 </div>
