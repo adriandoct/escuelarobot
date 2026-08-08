@@ -118,7 +118,7 @@ export default function CursosListPage() {
             <div 
               key={curso.id} 
               className={styles.courseCard}
-              onClick={() => router.push(`/dashboard/cursos/builder/${curso.id}`)}
+              onClick={() => router.push(isSensei ? `/dashboard/cursos/builder/${curso.id}` : `/dashboard/cursos/view/${curso.id}`)}
             >
               <div className={styles.thumbnailContainer}>
                 <img 

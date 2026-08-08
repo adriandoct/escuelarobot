@@ -49,6 +49,15 @@ CREATE TABLE IF NOT EXISTS public.curso_recursos (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Tabla de Inscripciones (Alumnos inscritos a un curso)
+CREATE TABLE IF NOT EXISTS public.curso_inscripciones (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    curso_id UUID REFERENCES public.cursos(id) ON DELETE CASCADE NOT NULL,
+    alumno_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(curso_id, alumno_id)
+);
+
 -- ==========================================
 -- 2. SEGURIDAD (RLS - Row Level Security)
 -- ==========================================
@@ -57,6 +66,7 @@ ALTER TABLE public.cursos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.curso_secciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.curso_lecciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.curso_recursos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.curso_inscripciones ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para cursos
 DROP POLICY IF EXISTS "Lectura de cursos" ON public.cursos;
@@ -85,6 +95,10 @@ CREATE POLICY "Lectura de recursos" ON public.curso_recursos FOR SELECT USING (t
 
 DROP POLICY IF EXISTS "Gestión de recursos para Senseis" ON public.curso_recursos;
 CREATE POLICY "Gestión de recursos para Senseis" ON public.curso_recursos FOR ALL USING (true);
+
+-- Políticas para inscripciones
+DROP POLICY IF EXISTS "Lectura y escritura de inscripciones" ON public.curso_inscripciones;
+CREATE POLICY "Lectura y escritura de inscripciones" ON public.curso_inscripciones FOR ALL USING (true);
 
 
 -- ==========================================
