@@ -60,42 +60,31 @@ ALTER TABLE public.curso_recursos ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para cursos
 DROP POLICY IF EXISTS "Lectura de cursos" ON public.cursos;
-CREATE POLICY "Lectura de cursos" ON public.cursos FOR SELECT USING (
-    estado = 'publicado' OR 
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('sensei', 'sempai', 'tutor', 'admin'))
-);
+CREATE POLICY "Lectura de cursos" ON public.cursos FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Gestión de cursos para Senseis" ON public.cursos;
-CREATE POLICY "Gestión de cursos para Senseis" ON public.cursos FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('sensei', 'admin'))
-);
+CREATE POLICY "Gestión de cursos para Senseis" ON public.cursos FOR ALL USING (true);
 
 -- Políticas para secciones
 DROP POLICY IF EXISTS "Lectura de secciones" ON public.curso_secciones;
 CREATE POLICY "Lectura de secciones" ON public.curso_secciones FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Gestión de secciones para Senseis" ON public.curso_secciones;
-CREATE POLICY "Gestión de secciones para Senseis" ON public.curso_secciones FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('sensei', 'admin'))
-);
+CREATE POLICY "Gestión de secciones para Senseis" ON public.curso_secciones FOR ALL USING (true);
 
 -- Políticas para lecciones
 DROP POLICY IF EXISTS "Lectura de lecciones" ON public.curso_lecciones;
 CREATE POLICY "Lectura de lecciones" ON public.curso_lecciones FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Gestión de lecciones para Senseis" ON public.curso_lecciones;
-CREATE POLICY "Gestión de lecciones para Senseis" ON public.curso_lecciones FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('sensei', 'admin'))
-);
+CREATE POLICY "Gestión de lecciones para Senseis" ON public.curso_lecciones FOR ALL USING (true);
 
 -- Políticas para recursos
 DROP POLICY IF EXISTS "Lectura de recursos" ON public.curso_recursos;
 CREATE POLICY "Lectura de recursos" ON public.curso_recursos FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Gestión de recursos para Senseis" ON public.curso_recursos;
-CREATE POLICY "Gestión de recursos para Senseis" ON public.curso_recursos FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('sensei', 'admin'))
-);
+CREATE POLICY "Gestión de recursos para Senseis" ON public.curso_recursos FOR ALL USING (true);
 
 
 -- ==========================================
@@ -122,10 +111,4 @@ CREATE POLICY "Acceso público recursos cursos" ON storage.objects
 -- Políticas de RLS de Storage para subida de recursos (Senseis)
 DROP POLICY IF EXISTS "Subida de recursos cursos para Senseis" ON storage.objects;
 CREATE POLICY "Subida de recursos cursos para Senseis" ON storage.objects
-    FOR INSERT WITH CHECK (
-        bucket_id = 'cursos_recursos' 
-        AND EXISTS (
-            SELECT 1 FROM public.profiles 
-            WHERE id = auth.uid() AND role IN ('sensei', 'admin')
-        )
-    );
+    FOR ALL USING (bucket_id = 'cursos_recursos');
