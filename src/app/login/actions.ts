@@ -106,7 +106,7 @@ export async function login(formData: FormData) {
 
         if (matched) {
           if (matched.activo === false) {
-            return redirect("/login?error=Esta cuenta de alumno está desactivada. Contacta a tu Sensei.");
+            return redirect("/pago-requerido");
           }
           cookieStore.set("dojoia_role", "karateka", { path: "/" });
           cookieStore.set("dojoia_email", email, { path: "/" });
