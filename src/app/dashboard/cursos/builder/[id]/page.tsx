@@ -18,6 +18,8 @@ interface Curso {
   thumbnail_url: string;
   estado: string;
   nivel: string;
+  precio?: number;
+  mercadopago_url?: string;
 }
 
 interface Recurso {
@@ -154,7 +156,9 @@ export default function CourseBuilderPage({ params }: { params: Promise<{ id: st
           descripcion: curso.descripcion,
           video_intro_url: curso.video_intro_url,
           estado: curso.estado,
-          nivel: curso.nivel
+          nivel: curso.nivel,
+          precio: curso.precio,
+          mercadopago_url: curso.mercadopago_url
         })
         .eq("id", curso.id);
         
@@ -407,6 +411,16 @@ export default function CourseBuilderPage({ params }: { params: Promise<{ id: st
                 <option value="borrador">Borrador (Oculto)</option>
                 <option value="publicado">Publicado (Visible a Alumnos)</option>
               </select>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <div className={styles.formGroup} style={{ flex: 1 }}>
+              <label className={styles.label}>Precio (Opcional)</label>
+              <input type="number" className={styles.input} placeholder="0.00" value={curso.precio || ""} onChange={e => setCurso({...curso, precio: parseFloat(e.target.value) || 0})} />
+            </div>
+            <div className={styles.formGroup} style={{ flex: 2 }}>
+              <label className={styles.label}>Enlace de MercadoPago (Opcional)</label>
+              <input type="text" className={styles.input} placeholder="https://mpago.la/..." value={curso.mercadopago_url || ""} onChange={e => setCurso({...curso, mercadopago_url: e.target.value})} />
             </div>
           </div>
           <div className={styles.actionRow}>

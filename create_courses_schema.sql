@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS public.cursos (
     thumbnail_url TEXT,
     estado VARCHAR(20) DEFAULT 'borrador' CHECK (estado IN ('borrador', 'publicado')),
     nivel VARCHAR(50) DEFAULT 'Todos los niveles',
+    precio NUMERIC(10, 2) DEFAULT 0.00,
+    mercadopago_url TEXT,
     sensei_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL

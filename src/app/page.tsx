@@ -57,6 +57,7 @@ export default function Home() {
   const [showTeaser, setShowTeaser] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [publicCursos, setPublicCursos] = useState<any[]>([]);
 
   const supabase = createClient();
 
@@ -143,6 +144,21 @@ export default function Home() {
             nivel: vid.nivel || "Todos los niveles"
           });
         }
+      }
+    };
+
+    const fetchPublicCursos = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("cursos")
+          .select("*")
+          .eq("estado", "publicado")
+          .order("created_at", { ascending: false });
+        if (!error && data) {
+          setPublicCursos(data);
+        }
+      } catch (err) {
+        console.warn("Error fetching public courses", err);
       }
     };
 
@@ -238,6 +254,7 @@ export default function Home() {
 
     fetchHomepageVideo();
     fetchDemoVideos();
+    fetchPublicCursos();
   }, []);
 
   const handleOpenDemoVideo = (vid: any) => {
@@ -571,6 +588,63 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* SECCIÓN: NUESTROS CURSOS */}
+      {publicCursos.length > 0 && (
+        <section id="cursos" className={styles.categorySection} style={{ background: 'var(--bg-secondary)', padding: '4rem 0' }}>
+          <div className="container">
+            <div className={styles.videoSectionHeader}>
+              <h2>NUESTROS <span style={{ color: 'var(--brand-red)' }}>CURSOS</span></h2>
+              <p>Inscríbete en nuestros cursos completos y aprende paso a paso a tu propio ritmo.</p>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem', marginTop: '2rem' }}>
+              {publicCursos.map(curso => (
+                <div key={curso.id} style={{ background: 'var(--bg-tertiary)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000' }}>
+                    <img 
+                      src={curso.thumbnail_url || "/ia-make-logo.png"} 
+                      alt={curso.titulo} 
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: curso.thumbnail_url ? 'cover' : 'contain', padding: curso.thumbnail_url ? '0' : '2rem' }}
+                    />
+                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'var(--success)', color: '#fff', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                      NUEVO
+                    </div>
+                  </div>
+                  <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{curso.titulo}</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem', flex: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {curso.descripcion}
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--brand-gold)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <GraduationCap size={16} /> {curso.nivel}
+                      </span>
+                      {curso.precio > 0 ? (
+                        <span style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--text-primary)' }}>
+                          ${curso.precio.toFixed(2)}
+                        </span>
+                      ) : (
+                        <span style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--success)' }}>
+                          Gratis
+                        </span>
+                      )}
+                    </div>
+                    <Link 
+                      href={curso.mercadopago_url || `/dashboard/cursos/view/${curso.id}`}
+                      target={curso.mercadopago_url ? "_blank" : undefined}
+                      className={styles.btnPrimary} 
+                      style={{ width: '100%', textAlign: 'center', padding: '0.8rem' }}
+                    >
+                      {curso.mercadopago_url ? "Comprar e Inscribirse" : "Inscribirse"}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* SECCIÓN: DOJO EN ACCIÓN (Video Destacado) */}
       <section className={styles.dojoVideoSection}>

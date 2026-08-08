@@ -14,6 +14,8 @@ interface Curso {
   video_intro_url: string;
   thumbnail_url: string;
   nivel: string;
+  precio: number;
+  mercadopago_url?: string;
 }
 
 interface Recurso {
@@ -133,6 +135,10 @@ export default function CourseViewPage({ params }: { params: Promise<{ id: strin
   };
 
   const handleEnroll = async () => {
+    if (curso?.mercadopago_url) {
+      window.open(curso.mercadopago_url, '_blank');
+    }
+
     setEnrolling(true);
     try {
       let uid = "00000000-0000-0000-0000-000000000000"; // Dummy para mock
@@ -224,13 +230,14 @@ export default function CourseViewPage({ params }: { params: Promise<{ id: strin
           {!isInscrito && (
             <div style={{ background: 'rgba(225, 29, 72, 0.1)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(225, 29, 72, 0.2)', textAlign: 'center' }}>
               <h3 style={{ marginBottom: '1rem' }}>¿Quieres acceder al contenido completo?</h3>
+              {curso.precio > 0 && <p style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>${curso.precio.toFixed(2)}</p>}
               <button 
                 onClick={handleEnroll}
                 disabled={enrolling}
                 className={styles.btnPrimary} 
                 style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
               >
-                {enrolling ? 'Inscribiendo...' : 'Inscribirme Gratis Ahora'}
+                {enrolling ? 'Procesando...' : (curso.mercadopago_url ? 'Pagar e Inscribirme' : 'Inscribirme Gratis Ahora')}
               </button>
             </div>
           )}
