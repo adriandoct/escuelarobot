@@ -16,6 +16,8 @@ export async function createClient() {
         getUser: async () => ({ data: { user: null }, error: null }),
         signInWithPassword: async () => ({ data: { user: null, session: null }, error: new Error("Supabase keys not configured") }),
         signUp: async () => ({ data: { user: null, session: null }, error: new Error("Supabase keys not configured") }),
+        signInWithOAuth: async () => ({ data: { url: null, provider: "google" }, error: new Error("Supabase keys not configured") }),
+        exchangeCodeForSession: async () => ({ data: { user: null, session: null }, error: new Error("Supabase keys not configured") }),
         signOut: async () => ({ error: null }),
       },
       from: () => {
