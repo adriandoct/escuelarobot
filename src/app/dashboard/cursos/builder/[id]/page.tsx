@@ -109,7 +109,7 @@ export default function CourseBuilderPage({ params }: { params: Promise<{ id: st
         
       if (seccData) {
         // For each section, load lessons and resources
-        const fullSecciones = await Promise.all(seccData.map(async (sec) => {
+        const fullSecciones = await Promise.all(seccData.map(async (sec: any) => {
           const { data: lecData } = await supabase
             .from("curso_lecciones")
             .select("*")
@@ -118,7 +118,7 @@ export default function CourseBuilderPage({ params }: { params: Promise<{ id: st
             
           let leccionesList = lecData || [];
           
-          leccionesList = await Promise.all(leccionesList.map(async (lec) => {
+          leccionesList = await Promise.all(leccionesList.map(async (lec: any) => {
             const { data: recData } = await supabase
               .from("curso_recursos")
               .select("*")
