@@ -64,7 +64,7 @@ export default async function LoginPage({
         </form>
 
         <div className={styles.linkText}>
-          ¿Aún no tienes cuenta? <Link href="/register">Inicia tu prueba gratis</Link>
+          ¿Aún no tienes cuenta? <Link href="/register">Regístrate</Link>
         </div>
       </div>
     </div>
