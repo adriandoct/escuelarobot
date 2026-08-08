@@ -14,7 +14,20 @@ interface Curso {
   thumbnail_url: string;
   estado: string;
   nivel: string;
+  precio?: number;
+  mercadopago_url?: string;
   created_at: string;
+}
+
+// Helper function to extract YouTube thumbnail
+function getYouTubeThumbnail(url: string) {
+  if (!url) return null;
+  const cleanUrl = url.trim();
+  const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/|youtube-nocookie\.com\/embed\/)([a-zA-Z0-9_-]{11})/;
+  const match = cleanUrl.match(regExp);
+  return (match && match[1].length === 11) 
+    ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` 
+    : null;
 }
 
 // Client-side helper to read cookies
@@ -122,10 +135,10 @@ export default function CursosListPage() {
             >
               <div className={styles.thumbnailContainer}>
                 <img 
-                  src={curso.thumbnail_url || "/ia-make-logo.png"} 
+                  src={curso.thumbnail_url || getYouTubeThumbnail(curso.video_intro_url) || "/ia-make-logo.png"} 
                   alt={curso.titulo} 
                   className={styles.thumbnailImg} 
-                  style={!curso.thumbnail_url ? { objectFit: 'contain', padding: '2rem' } : {}}
+                  style={!(curso.thumbnail_url || getYouTubeThumbnail(curso.video_intro_url)) ? { objectFit: 'contain', padding: '2rem' } : {}}
                 />
                 <div className={styles.statusTag} style={curso.estado === 'publicado' ? { background: 'rgba(16, 185, 129, 0.9)' } : { background: 'rgba(234, 179, 8, 0.9)' }}>
                   {curso.estado}
@@ -140,7 +153,11 @@ export default function CursosListPage() {
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                     <BookOpen size={12} /> {curso.nivel}
                   </span>
-                  {isSensei && (
+                  {!isSensei ? (
+                    <span style={{ fontWeight: 'bold', color: 'var(--success)' }}>
+                      ${(curso.precio || 1000).toFixed(2)}
+                    </span>
+                  ) : (
                     <span style={{ color: 'var(--brand-accent)', fontWeight: 'bold' }}>
                       Editar Temario →
                     </span>
