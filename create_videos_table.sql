@@ -58,7 +58,7 @@ INSERT INTO public.video_categorias (id, nombre, descripcion) VALUES
 ('3c3c3c3c-3333-3333-3333-333333333333', 'Kumite', 'Combate deportivo y aplicación táctica de defensa personal'),
 ('4d4d4d4d-4444-4444-4444-444444444444', 'Bunkai', 'Análisis práctico y explicaciones del significado de los katas'),
 ('5e5e5e5e-5555-5555-5555-555555555555', 'Acondicionamiento', 'Ejercicios de fortalecimiento físico, elasticidad y velocidad')
-ON CONFLICT (nombre) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 -- 5. Crear el bucket 'videos' de Storage si no existe
 INSERT INTO storage.buckets (id, name, public) 

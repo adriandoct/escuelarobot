@@ -98,6 +98,11 @@ export default async function DashboardLayout({
                 <span>Talleres y Programa STEM</span>
               </Link>
 
+              <Link href="/dashboard/cursos" className={styles.navItem}>
+                <PlaySquare size={20} />
+                <span>Cursos (Creador)</span>
+              </Link>
+
               <Link href="/dashboard/videos" className={styles.navItem}>
                 <Video size={20} />
                 <span>Videos y Módulos</span>
@@ -127,6 +132,11 @@ export default async function DashboardLayout({
               <Link href="/dashboard/progreso" className={styles.navItem}>
                 <BarChart2 size={20} />
                 <span>Mi Progreso</span>
+              </Link>
+
+              <Link href="/dashboard/cursos" className={styles.navItem}>
+                <PlaySquare size={20} />
+                <span>Mis Cursos</span>
               </Link>
 
               <Link href="/dashboard/videos" className={styles.navItem}>
