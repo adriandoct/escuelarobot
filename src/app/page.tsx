@@ -632,7 +632,6 @@ export default function Home() {
                     </div>
                     <Link 
                       href={curso.mercadopago_url || `/dashboard/cursos/view/${curso.id}`}
-                      target={curso.mercadopago_url ? "_blank" : undefined}
                       className={styles.btnPrimary} 
                       style={{ width: '100%', textAlign: 'center', padding: '0.8rem' }}
                     >

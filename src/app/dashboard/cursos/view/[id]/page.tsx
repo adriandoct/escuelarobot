@@ -136,7 +136,8 @@ export default function CourseViewPage({ params }: { params: Promise<{ id: strin
 
   const handleEnroll = async () => {
     if (curso?.mercadopago_url) {
-      window.open(curso.mercadopago_url, '_blank');
+      window.location.href = curso.mercadopago_url;
+      return;
     }
 
     setEnrolling(true);
