@@ -248,28 +248,3 @@ export async function signup(formData: FormData) {
   redirect("/dashboard?welcome=true");
 }
 
-export async function signInWithGoogle() {
-  const supabase = await createClient();
-  const headersList = await headers();
-  const host = headersList.get("host") ?? "localhost:3000";
-  const protocol = host.includes("localhost") ? "http" : "https";
-  const origin = `${protocol}://${host}`;
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${origin}/auth/callback`,
-      queryParams: {
-        // Forzar selección de cuenta cada vez para que el usuario elija su Gmail
-        prompt: "select_account",
-      },
-    },
-  });
-
-  if (error || !data?.url) {
-    return redirect("/login?error=" + encodeURIComponent("Error al conectar con Google. Verifica la configuración de Supabase."));
-  }
-
-  // Redirigir al URL de OAuth de Google generado por Supabase
-  redirect(data.url);
-}
