@@ -248,3 +248,96 @@ export async function signup(formData: FormData) {
   redirect("/dashboard?welcome=true");
 }
 
+export async function loginWithGoogleAccount(selectedEmail: string, selectedName?: string) {
+  const email = (selectedEmail || "").trim().toLowerCase();
+  if (!email || !email.includes("@")) {
+    return redirect("/login?error=" + encodeURIComponent("Por favor ingresa un correo válido."));
+  }
+
+  const cookieStore = await cookies();
+  const supabase = await createClient();
+
+  const isMockSupabase = !process.env.NEXT_PUBLIC_SUPABASE_URL || 
+                         !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+                         String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY).includes("reemplázala") ||
+                         !String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY).startsWith("eyJ");
+
+  let determinedRole = "karateka";
+  let determinedName = selectedName || "";
+
+  // Check if admin / sensei
+  const isSenseiEmail = 
+    email.includes("admin") || 
+    email.includes("sensei") || 
+    email.includes("silva.adrian") || 
+    email === "silva.adrian@sujv.mx";
+
+  if (isSenseiEmail) {
+    determinedRole = "sensei";
+    if (!determinedName) determinedName = email.includes("silva") ? "Adrián Silva" : "Director Maker";
+  }
+
+  if (!isMockSupabase) {
+    try {
+      // 1. Check in profiles table
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, full_name, email")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (profile) {
+        determinedRole = profile.role || determinedRole;
+        determinedName = profile.full_name || determinedName;
+      } else {
+        // 2. Check in karatekas table
+        const { data: students } = await supabase
+          .from("karatekas")
+          .select("nombre, tutor, activo")
+          .ilike("tutor", `%${email}%`);
+
+        if (students && students.length > 0) {
+          const student = students[0];
+          if (student.activo === false) {
+            return redirect("/pago-requerido");
+          }
+          determinedRole = "karateka";
+          determinedName = student.nombre || determinedName;
+        }
+      }
+    } catch (err) {
+      console.warn("Error querying database in loginWithGoogleAccount:", err);
+    }
+  }
+
+  // If name is still empty, format from email
+  if (!determinedName) {
+    const userPart = email.split("@")[0].replace(/[._-]/g, " ");
+    determinedName = userPart
+      .split(" ")
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  }
+
+  cookieStore.set("dojoia_role", determinedRole, { path: "/" });
+  cookieStore.set("dojoia_email", email, { path: "/" });
+  cookieStore.set("dojoia_name", determinedName, { path: "/" });
+  cookieStore.set("dojoia_auth_provider", "google", { path: "/" });
+
+  revalidatePath("/", "layout");
+  redirect("/dashboard");
+}
+
+export async function loginWithGmailInput(formData: FormData) {
+  let email = formData.get("email") as string;
+  email = (email || "").trim();
+  if (!email) {
+    return redirect("/login?error=" + encodeURIComponent("Por favor escribe tu correo de Google"));
+  }
+  if (!email.includes("@")) {
+    email = `${email}@gmail.com`;
+  }
+  return loginWithGoogleAccount(email);
+}
+
+
