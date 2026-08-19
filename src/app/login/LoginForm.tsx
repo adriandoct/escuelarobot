@@ -88,10 +88,26 @@ export default function LoginForm({ initialError }: LoginFormProps) {
         <div className={styles.headerRow}>
           <div className={styles.brandGroup}>
             <div className={styles.brandIconCircle}>
-              <Flame size={28} color="#ffffff" strokeWidth={2.4} />
+              <img
+                src="/ia-make-logo.png"
+                alt="IA Make Logo"
+                style={{ width: "38px", height: "38px", objectFit: "contain" }}
+              />
             </div>
             <div className={styles.brandTitles}>
-              <h1 className={styles.mainTitle}>IA Make Robotics</h1>
+              <div style={{ display: "flex", alignItems: "center", lineHeight: 1 }}>
+                <span
+                  className="logo-script"
+                  style={{
+                    fontSize: "2.35rem",
+                    color: "var(--dojo-white, #ffffff)",
+                    textTransform: "none",
+                    lineHeight: 1,
+                  }}
+                >
+                  IA <span style={{ color: "var(--brand-accent, #ff3366)" }}>Make</span>
+                </span>
+              </div>
               <span className={styles.subTitleBadge}>ACCESO AL SISTEMA</span>
             </div>
           </div>
